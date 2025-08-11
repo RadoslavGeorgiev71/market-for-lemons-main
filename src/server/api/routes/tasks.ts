@@ -9,8 +9,8 @@ export const taskRouter = createTRPCRouter({
       const { ctx, input } = opts;
 
       const [newTask] = await ctx.sql`
-        INSERT INTO tasks (user_id, domain, question, ai_system, ai_advice, initial_confidence, final_confidence) 
-        VALUES (${input.user_id}, ${input.domain}, ${input.question}, ${input.ai_system}, ${input.ai_advice}, ${input.initial_confidence}, ${input.final_confidence}) 
+        INSERT INTO tasks (user_id, domain, question_num, question, ai_system, ai_advice, initial_confidence, final_confidence, final_answer) 
+        VALUES (${input.user_id}, ${input.domain}, ${input.question_num}, ${input.question}, ${input.ai_system}, ${input.ai_advice}, ${input.initial_confidence}, ${input.final_confidence}, ${input.final_answer}) 
         RETURNING *
       `;
 

@@ -148,11 +148,13 @@ export default function DomainTask({
       await createTask.mutateAsync({
         user_id,
         domain,
+        question_num: currentTaskIndex + 1,
         question: currentTask.question,
         ai_system: selectedSystem.name,
         ai_advice: aiAdvice,
         initial_confidence: parseInt(confidenceInChoice),
         final_confidence: parseInt(confidenceInFinalAnswer),
+        final_answer: finalAnswer,
       });
     } catch (error) {
       console.error("Failed to save task:", error);
@@ -169,6 +171,7 @@ export default function DomainTask({
     if (Math.random() * 100 < system.accuracy) {
       return task.correctAnswer;
     } else {
+      //TODO: 
       // Generate a plausible wrong answer for demonstration
       return "AI generated incorrect answer";
     }
@@ -425,7 +428,7 @@ export default function DomainTask({
                     )}
 
                     {/* Step 5: Selection Reason (Last Task Only) */}
-                    {dialogStep >= 5 &&
+                    {/* {dialogStep >= 5 &&
                       currentTaskIndex === tasks.length - 1 && (
                         <div ref={step5Ref} className="space-y-4">
                           <div>
@@ -539,7 +542,7 @@ export default function DomainTask({
                             </div>
                           </div>
                         </div>
-                      )}
+                      )} */}
                   </div>
                 </div>
 
