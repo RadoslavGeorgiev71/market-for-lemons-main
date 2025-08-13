@@ -69,6 +69,11 @@ export default function DomainTask({
 
   const [evaluatedTask, setEvaluatedTask] = useState<Task | null>(null);
 
+  const [hoveredSystem, setHoveredSystem] = useState<number | null>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [hoverProgress, setHoverProgress] = useState(0); // 0 → 100 %
+  const hoverTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
   // API mutations
   const utils = api.useUtils();
   const createTask = api.task.create.useMutation({
@@ -193,8 +198,12 @@ export default function DomainTask({
     }
   };
 
-  const handleSystemSelect = (system: AISystem) => {
+  const handleSystemSelect = async (system: AISystem) => {
     setSelectedSystem(system);
+    clearInterval(hoverTimer.current!);
+    if (!revealedSystems.includes(system.id)) {
+      await createHoverSystem.mutateAsync({ user_id: user_id, domain: domain, ai_system: system.id });
+    }
     setAiAdvice(generateAIAdvice(currentTask, system));
     setDialogStep(1);
     setIsDialogOpen(true);
@@ -232,11 +241,6 @@ export default function DomainTask({
       },
     }
   );
-
-  const [hoveredSystem, setHoveredSystem] = useState<number | null>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [hoverProgress, setHoverProgress] = useState(0); // 0 → 100 %
-  const hoverTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const revealedSystems: number[] = api.hoveredSystem.getHoveredSystems.useQuery({ user_id, domain }).data?.map((system) => Number(system.ai_system)) || [];
 
@@ -321,7 +325,7 @@ export default function DomainTask({
                 onMouseMove={handleMouseMove}
               >
                 {/* Hover & Hold to Open */}
-                {isHovered && !isRevealed && (
+                {isHovered && !isRevealed && !isDialogOpen && (
                   <svg
                     className="fixed z-50 w-5 h-5 pointer-events-none"
                     style={{ top: mousePos.y, left: mousePos.x }}
