@@ -224,6 +224,59 @@ export default function DomainTask({
     }
   };
 
+  const createHoverSystem = api.hoveredSystem.create.useMutation(
+    {
+      onSuccess: () => {
+        // Invalidate hovered systems query to update list
+        utils.hoveredSystem.getHoveredSystems.invalidate({ user_id, domain });
+      },
+    }
+  );
+
+  const [hoveredSystem, setHoveredSystem] = useState<number | null>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [hoverProgress, setHoverProgress] = useState(0); // 0 → 100 %
+  const hoverTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const revealedSystems: number[] = api.hoveredSystem.getHoveredSystems.useQuery({ user_id, domain }).data?.map((system) => Number(system.ai_system)) || [];
+
+  const HOVER_TIME = 1000; // ms until reveal
+
+  const handleMouseEnter = (system: AISystem) => {
+  if (revealedSystems.includes(system.id)) return; // already revealed
+
+  setHoveredSystem(system.id);
+  setHoverProgress(0);
+  const start = Date.now();
+
+    hoverTimer.current = setInterval(async () => {
+      const elapsed = Date.now() - start;
+      const pct = Math.min((elapsed / HOVER_TIME) * 100, 100);
+      setHoverProgress(pct);
+
+      if (pct >= 100) {
+        clearInterval(hoverTimer.current!);
+        await createHoverSystem.mutateAsync({ user_id: user_id, domain: domain, ai_system: system.id });
+        setHoveredSystem(null);
+      }
+    }, 16);
+  };
+
+  const handleMouseLeave = () => {
+    //if (revealedSystems.has(systemId)) return; // don't reset revealed
+    setHoveredSystem(null);
+    setHoverProgress(0);
+    clearInterval(hoverTimer.current!);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    setMousePos({ x: e.clientX + 15, y: e.clientY + 15 }); // offset 15px from cursor
+  };
+
+  useEffect(() => {
+    return () => clearInterval(hoverTimer.current!); // cleanup
+  }, []);
+
   // const handleReasonChange = (reason: string, checked: boolean) => {
   //   if (checked) {
   //     setSelectionReasons((prev) => [...prev, reason]);
@@ -255,8 +308,50 @@ export default function DomainTask({
           </h2>
 
           <div className="grid grid-cols-5 gap-4">
-            {aiSystems.map((system) => (
-              <Dialog
+            {aiSystems.map((system) => {
+              const isRevealed = revealedSystems.includes(system.id);
+              const isHovered = hoveredSystem === system.id;
+
+              return (
+                <div 
+                key={system.id}
+                className="relative"
+                onMouseEnter={() => handleMouseEnter(system)}
+                onMouseLeave={handleMouseLeave}
+                onMouseMove={handleMouseMove}
+              >
+                {/* Hover & Hold to Open */}
+                {isHovered && !isRevealed && (
+                  <svg
+                    className="fixed z-50 w-5 h-5 pointer-events-none"
+                    style={{ top: mousePos.y, left: mousePos.x }}
+                    viewBox="0 0 36 36"
+                  >
+                    {/* Background Circle */}
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="16"
+                      stroke="#ddd"
+                      strokeWidth="4"
+                      fill="white"
+                    />
+                    {/* Progress Circle */}
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="16"
+                      stroke="#4f46e5" // Tailwind purple-600
+                      strokeWidth="4"
+                      fill="transparent"
+                      strokeDasharray={100}
+                      strokeDashoffset={100 - hoverProgress}
+                      strokeLinecap="round"
+                      transform="rotate(-90 18 18)"
+                    />
+                  </svg>
+                )}
+                <Dialog
                 key={system.id}
                 open={isDialogOpen && selectedSystem?.id === system.id}
                 onOpenChange={(open) => {
@@ -278,14 +373,14 @@ export default function DomainTask({
                       <h3 className="font-semibold text-lg mb-2">
                         {system.name}
                       </h3>
-                      <div className="space-y-1 text-sm text-muted-foreground">
+                      {isRevealed && <div className="space-y-1 text-sm text-muted-foreground">
                         {disclosure !== Disclosure.none && (
                           <p>Accuracy: {system.accuracy}%</p>
                         )}
                         {disclosure === Disclosure.full && (
                           <p>Data Quality: {system.dataQuality}</p>
                         )}
-                      </div>
+                      </div>} 
                     </div>
                   </div>
                 </DialogTrigger>
@@ -609,8 +704,10 @@ export default function DomainTask({
                     )}
                   </div>
                 </DialogContent>
-              </Dialog>
-            ))}
+                </Dialog>
+              </div>
+              )
+            })}
           </div>
         </div>
       )}
