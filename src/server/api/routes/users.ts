@@ -68,4 +68,16 @@ export const userRouter = createTRPCRouter({
       return user;
     }
   ),
+  delete: publicProcedure
+    .input(
+      z.object({
+        user_id: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const sql = ctx.sql;
+      await sql`DELETE FROM users WHERE user_id = ${input.user_id}`;
+      await sql`DELETE FROM tasks WHERE user_id = ${input.user_id}`;
+      return { success: true };
+    }),
 });
