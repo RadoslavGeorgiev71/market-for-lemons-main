@@ -89,7 +89,7 @@ export default function Finance({ userId, disclosure }: FinanceProps) {
   const utils = api.useUtils();
 
   // Get completed tasks for this user
-  const { data: completedTasks } = api.task.getTasksByUserId.useQuery({ userId: userId });
+  // const { data: completedTasks } = api.task.getTasksFor.useQuery({ userId: userId });
 
   const updateState = api.user.updateState.useMutation({
     onSuccess: () => {
@@ -114,7 +114,7 @@ export default function Finance({ userId, disclosure }: FinanceProps) {
 
   const handleTaskCompletion = () => {
     // Invalidate tasks query to refresh completed tasks
-    utils.task.getTasksByUserId.invalidate({ userId });
+    //utils.task.getTasksByUserId.invalidate({ userId });
     updateState.mutate({
       userId,
       state: State.cybersecurity,
@@ -122,7 +122,11 @@ export default function Finance({ userId, disclosure }: FinanceProps) {
   };
 
   // if data for getTasksByUserId is still loading, show a loading state
-  if (updateDisclosure.isPending || !completedTasks) {
+  // if (updateDisclosure.isPending || !completedTasks) {
+  //   return <Loading />;
+  // }
+
+  if (updateDisclosure.isPending) {
     return <Loading />;
   }
 
@@ -161,7 +165,7 @@ export default function Finance({ userId, disclosure }: FinanceProps) {
         aiSystems={aiSystems}
         disclosure={disclosure}
         userId={userId}
-        completedTasks={completedTasks || []}
+        // completedTasks={completedTasks || []}
         onComplete={handleTaskCompletion}
       />
     </div>

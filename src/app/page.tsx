@@ -17,9 +17,9 @@ export default function Home() {
   const utils = api.useUtils();
   const createUser = api.user.create.useMutation();
   const updateState = api.user.updateState.useMutation({
-    onSuccess: async () => {
-      await utils.user.getUserById.invalidate({ userId: userId ?? "" });
-    },
+      onSuccess: async () => {
+        await utils.user.getUserById.invalidate({ userId: userId ?? "" });
+      },
   });
   const searchParams = useSearchParams();
   const userId = searchParams?.get("user_id");
