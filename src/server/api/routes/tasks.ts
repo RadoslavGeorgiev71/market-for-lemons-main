@@ -20,13 +20,13 @@ export const taskRouter = createTRPCRouter({
   getTasksByUserId: publicProcedure
     .input(
       z.object({
-        user_id: z.string(),
+        userId: z.string(),
       })
     )
     .query(async ({ ctx, input }) => {
       const sql = ctx.sql;
       const tasks = await sql`
-        SELECT * FROM tasks WHERE user_id = ${input.user_id}
+        SELECT * FROM tasks WHERE user_id = ${input.userId}
       `;
       return tasks as unknown as Task[];
     }

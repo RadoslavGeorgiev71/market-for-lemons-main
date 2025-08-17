@@ -18,17 +18,17 @@ export default function Home() {
   const createUser = api.user.create.useMutation();
   const updateState = api.user.updateState.useMutation({
     onSuccess: async () => {
-      await utils.user.getUserById.invalidate({ user_id: user_id ?? "" });
+      await utils.user.getUserById.invalidate({ userId: userId ?? "" });
     },
   });
   const searchParams = useSearchParams();
-  const user_id = searchParams?.get("user_id");
+  const userId = searchParams?.get("user_id");
   const getUser = api.user.getUserById.useQuery(
-    { user_id: user_id ?? "" },
-    { enabled: !!user_id }
+    { userId: userId ?? "" },
+    { enabled: !!userId }
   );
 
-  if (!user_id) {
+  if (!userId) {
     return (
       <div className="flex flex-col bg-background min-h-screen w-full items-center justify-center gap-6 p-24">
         <div className="flex w-full h-fit items-center justify-center gap-x-2">
@@ -38,11 +38,11 @@ export default function Home() {
         <Button
           onClick={async () => {
             const user = await createUser.mutateAsync({
-              user_id: uuidv4(),
+              userId: uuidv4(),
               state: State.preTask,
               disclosure: Disclosure.full,
             });
-            router.push(`/?user_id=${user.user_id}`);
+            router.push(`/?user_id=${user.userId}`);
           }}
           disabled={createUser.isPending}
         >
@@ -80,7 +80,7 @@ export default function Home() {
             <h1 className="text-2xl font-semibold">Pre-Task</h1>
             <Button onClick={() => {
               updateState.mutate({
-                user_id: user_id!,
+                userId: userId!,
                 state: State.tutorial,
               });
             }} disabled={updateState.isPending}>
@@ -95,7 +95,7 @@ export default function Home() {
             <h1 className="text-2xl font-semibold">Tutorial</h1>
             <Button onClick={() => {
               updateState.mutate({
-                user_id: user_id!,
+                userId: userId!,
                 state: State.finance,
               });
             }} disabled={updateState.isPending}>
@@ -106,7 +106,7 @@ export default function Home() {
         );
       case State.finance:
         return (
-          <Finance user_id={user_id!} disclosure={disclosure} />
+          <Finance userId={userId!} disclosure={disclosure} />
         );
       case State.cybersecurity:
         return (
@@ -114,7 +114,7 @@ export default function Home() {
             <h1 className="text-2xl font-semibold">Cybersecurity Task</h1>
             <Button onClick={() => {
               updateState.mutate({
-                user_id: user_id!,
+                userId: userId!,
                 state: State.medical,
               });
             }} disabled={updateState.isPending}>
@@ -129,7 +129,7 @@ export default function Home() {
             <h1 className="text-2xl font-semibold">Medical Task</h1>
             <Button onClick={() => {
               updateState.mutate({
-                user_id: user_id!,
+                userId: userId!,
                 state: State.postTask,
               });
             }} disabled={updateState.isPending}>
@@ -144,7 +144,7 @@ export default function Home() {
             <h1 className="text-2xl font-semibold">Post-Task</h1>
             <Button onClick={() => {
               updateState.mutate({
-                user_id: user_id!,
+                userId: userId!,
                 state: State.completion,
               });
             }} disabled={updateState.isPending}>

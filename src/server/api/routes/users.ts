@@ -8,7 +8,7 @@ export const userRouter = createTRPCRouter({
   create: publicProcedure
     .input(
       z.object({
-        user_id: z.string(),
+        userId: z.string(),
         state: z.enum(State),
         disclosure: z.enum(Disclosure),
       })
@@ -17,67 +17,72 @@ export const userRouter = createTRPCRouter({
       const { ctx, input } = opts;
 
       const [existingUser] =
-        await ctx.sql`SELECT * FROM users WHERE user_id = ${input.user_id}`;
+        await ctx.sql`SELECT user_id AS "userId", state, disclosure 
+          FROM users WHERE user_id = ${input.userId}`;
 
       if (existingUser) return existingUser as User;
 
       const [newUser] =
-        await ctx.sql`INSERT INTO users (user_id, state, disclosure) VALUES (${input.user_id}, ${input.state}, ${input.disclosure}) RETURNING *`;
+        await ctx.sql`INSERT INTO users (user_id, state, disclosure) VALUES (${input.userId}, ${input.state}, ${input.disclosure}) RETURNING 
+          user_id AS "userId", state, disclosure`;
 
-      return newUser;
+      return newUser as User;
     }),
   getUserById: publicProcedure
     .input(
       z.object({
-        user_id: z.string(),
+        userId: z.string(),
       })
     )
     .query(async ({ ctx, input }) => {
       const sql = ctx.sql;
       const [user] =
-        await sql`SELECT * FROM users WHERE user_id = ${input.user_id}`;
+        await sql`SELECT user_id AS "userId", state, disclosure 
+          FROM users WHERE user_id = ${input.userId}`;
       if (!user) {
         return null;
       }
-      return user;
+      return user as User;
     }),
   updateState: publicProcedure
     .input(
       z.object({
-        user_id: z.string(),
+        userId: z.string(),
         state: z.enum(State),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const sql = ctx.sql;
       const [user] =
-        await sql`UPDATE users SET state = ${input.state} WHERE user_id = ${input.user_id} RETURNING *`;
-      return user;
+        await sql`UPDATE users SET state = ${input.state} WHERE user_id = ${input.userId} RETURNING 
+          user_id AS "userId", state, disclosure`;
+      return user as User;
     }),
     updateDisclosure: publicProcedure
     .input(
       z.object({
-        user_id: z.string(),
+        userId: z.string(),
         disclosure: z.enum(Disclosure),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const sql = ctx.sql;
       const [user] =
-        await sql`UPDATE users SET disclosure = ${input.disclosure} WHERE user_id = ${input.user_id} RETURNING *`;
-      return user;
+        await sql`UPDATE users SET disclosure = ${input.disclosure} WHERE user_id = ${input.userId} RETURNING 
+          user_id AS "userId", state, disclosure`;
+      return user as User;
     }
   ),
   delete: publicProcedure
     .input(
       z.object({
-        user_id: z.string(),
+        userId: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const sql = ctx.sql;
-      await sql`DELETE FROM users WHERE user_id = ${input.user_id}`;
-      await sql`DELETE FROM tasks WHERE user_id = ${input.user_id}`;
+      await sql`DELETE FROM users WHERE user_id = ${input.userId}`;
+      await sql`DELETE FROM tasks WHERE user_id = ${input.userId}`;
       return { success: true };
     }),
 });
