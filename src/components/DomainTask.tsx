@@ -12,13 +12,7 @@ import { api } from "@/trpc/react";
 import { Disclosure } from "@/types/disclosure";
 import Loading from "@/app/loading";
 import { Slider } from "./ui/slider";
-
-interface AISystem {
-  id: string;
-  accuracy: number;
-  dataQuality: string;
-  isLemon: boolean;
-}
+import { AISystem } from "@/types/aiSystem";
 
 interface FinanceTask {
   id: string;
@@ -29,22 +23,26 @@ interface FinanceTask {
 }
 
 interface DomainTaskProps {
+  userId: string;
   domain: string;
+  disclosure: Disclosure;
+  instancePermutation: number[];
+  currentInstance: number;
   tasks: FinanceTask[];
   aiSystems: AISystem[];
-  disclosure: Disclosure;
-  userId: string;
-  // completedTasks?: TaskType[];
+  updatePath: (userId: string, currentInstance: number) => void;
   onComplete?: () => void;
 }
 
 export default function DomainTask({
+  userId,
   domain,
+  disclosure,
   tasks,
   aiSystems,
-  disclosure,
-  userId,
-  // completedTasks = [],
+  instancePermutation,
+  currentInstance,
+  updatePath,
   onComplete,
 }: DomainTaskProps) {
   const [hoveredSystem, setHoveredSystem] = useState<string | null>(null);
@@ -73,18 +71,19 @@ export default function DomainTask({
     },
   });
 
-  const tasksQuery = api.task.getTasksForUser.useQuery({ userId, domain });
-  const currentTaskIndex = tasksQuery.data?.length || 0;
+  // Get the current task based on the permutations and the current instance
+  const currentTask = tasks[instancePermutation[currentInstance]];
 
   const handleAiSystemSelect = async (system: AISystem, index: number) => {
-    clearInterval(hoverTimer.current!);
     setSelectedSystem(system);
     setSelectedSystemIndex(index);
   };
 
   const submitAnswer = async () => {
-    if (currentTaskIndex == 3 || currentTaskIndex == 8) {
+    if (currentInstance == 3 || currentInstance == 8) {
       setShowSurvey(true);
+    } else if (currentInstance == 9) {
+      onComplete?.();
     } else {
       nextTask();
     }
@@ -95,18 +94,18 @@ export default function DomainTask({
       createTask.mutate({
         userId: userId,
         domain: domain,
-        questionNum: currentTaskIndex + 1,
-        taskId: tasks[currentTaskIndex].id,
+        questionNum: currentInstance + 1,
+        taskId: currentTask.id,
         usedAI: false,
         systemId: "",
-        succeeded: selectedAnswer === tasks[currentTaskIndex].truePrediction,
+        succeeded: selectedAnswer === currentTask.truePrediction,
       });
     } else {
       createTask.mutate({
         userId: userId,
         domain: domain,
-        questionNum: currentTaskIndex + 1,
-        taskId: tasks[currentTaskIndex].id,
+        questionNum: currentInstance + 1,
+        taskId: currentTask.id,
         usedAI: true,
         systemId: selectedSystem!.id,
         succeeded: selectedSystem!.isLemon,
@@ -116,6 +115,8 @@ export default function DomainTask({
         await createHoverAiSystem.mutateAsync({ userId: userId, aiSystem: selectedSystem!.id });
       }
     }
+
+    updatePath(userId, currentInstance + 1);
 
     setSelectedAnswer(null);
     setSelectedSystem(null);
@@ -129,7 +130,7 @@ export default function DomainTask({
     await createSurveyResult.mutateAsync({
       userId: userId,
       domain: domain,
-      questionNum: currentTaskIndex + 1,
+      questionNum: currentInstance + 1,
       selectedLemonNumber: selectedLemonNumber!,
       selectedTrust: selectedTrust!,
     });
@@ -192,13 +193,13 @@ export default function DomainTask({
 
   
 
-  if (tasksQuery.isFetching) {
+  if (createTask.isPending) {
     return <Loading />;
   }
 
   return (
     <div className="flex flex-col items-center gap-6 p-0">
-      <h1 className="text-2xl font-bold mb-4">{domain} task {currentTaskIndex + 1}/{tasks.length}</h1>
+      <h1 className="text-2xl font-bold mb-4">{domain} task {currentInstance + 1}/{tasks.length}</h1>
       <div className="w-full flex flex-row gap-x-6 items-start p-4 border-2 border-gray-50 rounded-md h-126">
         <div className="flex flex-col items-center w-[30%]">
           <h2 className="text-xl max-w-3xl mb-4 text-left flex-1">
@@ -208,7 +209,7 @@ export default function DomainTask({
           <div className="bg-gray-50 p-2 rounded-md min-w-80">
             <table className="min-w-full border border-gray-300">
                 <tbody>
-                {Object.entries(tasks[currentTaskIndex].values).map((row, index) => (
+                {Object.entries(currentTask.values).map((row, index) => (
                   <tr key={index}>
                     <td className="bg-gray-200 border text-xs border-gray-500 px-2 py-2 text-left w-[40%]">{row[0]}</td>
                     <td className="border text-xs border-gray-500 px-2 py-1 text-left w-[60%]">{row[1]}</td>
@@ -274,7 +275,8 @@ export default function DomainTask({
           <div>
             <h2 className="text-xl max-w-3xl mb-4 text-center flex-1">AI pool</h2>
             <div className="grid grid-cols-5 gap-4 p-2 border-2 rounded-lg border-gray-50 min-w-175">
-              {aiSystems.map((system, index) => {
+              {/* Display AI Systems in instance order */}
+              {instancePermutation.map(i => aiSystems[i]).map((system, index) => {
                 const isRevealed = revealedSystems.includes(system.id);
                 const isHovered = hoveredSystem === system.id;
 
@@ -288,7 +290,7 @@ export default function DomainTask({
                     onClick={() => handleAiSystemSelect(system, index)}
                   >
                     {/* Hover & Hold to Open */}
-                    {isHovered && !isRevealed && selectedSystem !== system && disclosure !== Disclosure.none && (
+                    {isHovered && !isRevealed && disclosure !== Disclosure.none && (
                       <svg
                         className="fixed z-50 w-5 h-5 pointer-events-none"
                         style={{ top: mousePos.y, left: mousePos.x }}
@@ -389,8 +391,8 @@ export default function DomainTask({
                     </div>
                     <h2 className="text-xl max-w-3xl">
                       AI answer: {selectedSystem!.isLemon ? 
-                        (tasks[currentTaskIndex].truePrediction === "Accept" ? "Reject" : "Accept") : 
-                        (tasks[currentTaskIndex].truePrediction === "Accept" ? "Accept" : "Reject")}
+                        (currentTask.truePrediction === "Accept" ? "Reject" : "Accept") : 
+                        (currentTask.truePrediction === "Accept" ? "Accept" : "Reject")}
                       </h2>
                   </div>
                 )}
@@ -400,7 +402,7 @@ export default function DomainTask({
 
                 <div className="flex flex-col items-center">
                   <h2 className="text-xl max-w-3xl mb-8 text-center">
-                    The correct decision is: <strong>{tasks[currentTaskIndex].truePrediction}</strong>
+                    The correct decision is: <strong>{currentTask.truePrediction}</strong>
                   </h2>
                   <Button className="w-50 mb-5" onClick={() => {
                     submitAnswer();
