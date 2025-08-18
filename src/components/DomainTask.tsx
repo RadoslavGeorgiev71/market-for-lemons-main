@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, JSX } from "react";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -13,14 +13,8 @@ import { Disclosure } from "@/types/disclosure";
 import Loading from "@/app/loading";
 import { Slider } from "./ui/slider";
 import { AISystem } from "@/types/aiSystem";
+import { Task } from "@/types/task";
 
-interface FinanceTask {
-  id: string;
-  truePrediction: string;
-  values: {
-    [key: string]: string | number;
-  }
-}
 
 interface DomainTaskProps {
   userId: string;
@@ -28,10 +22,15 @@ interface DomainTaskProps {
   disclosure: Disclosure;
   instancePermutation: number[];
   currentInstance: number;
-  tasks: FinanceTask[];
+  tasks: Task[];
   aiSystems: AISystem[];
   updatePath: (userId: string, currentInstance: number) => void;
   onComplete?: () => void;
+  taskInformationComponent: (currentTask: Task) => JSX.Element;
+  taskTerms: {
+    positive: string;
+    negative: string;
+  }
 }
 
 export default function DomainTask({
@@ -44,13 +43,15 @@ export default function DomainTask({
   currentInstance,
   updatePath,
   onComplete,
+  taskInformationComponent,
+  taskTerms
 }: DomainTaskProps) {
   const [hoveredSystem, setHoveredSystem] = useState<string | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [hoverProgress, setHoverProgress] = useState(0); // 0 → 100 %
   const hoverTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const [selectedAnswer, setSelectedAnswer] = useState<"Accept" | "Reject" | null>(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<DomainTaskProps["taskTerms"]["positive"] | DomainTaskProps["taskTerms"]["negative"] | null>(null);
   const [selectedSystem, setSelectedSystem] = useState<AISystem | null>(null);
   const [selectedSystemIndex, setSelectedSystemIndex] = useState<number | null>(null);
   const [chosenOption, setChosenOption] = useState<"Own Answer" |"AI answer" | null>(null);
@@ -198,32 +199,15 @@ export default function DomainTask({
   }
 
   return (
-    <div className="flex flex-col items-center gap-6 p-0">
+    <div className="flex flex-col items-center gap-6 p-0 mt-[-25]">
       <h1 className="text-2xl font-bold mb-4">{domain} task {currentInstance + 1}/{tasks.length}</h1>
-      <div className="w-full flex flex-row gap-x-6 items-start p-4 border-2 border-gray-50 rounded-md h-126">
-        <div className="flex flex-col items-center w-[30%]">
-          <h2 className="text-xl max-w-3xl mb-4 text-left flex-1">
-            Applicant details
-          </h2>
-
-          <div className="bg-gray-50 p-2 rounded-md min-w-80">
-            <table className="min-w-full border border-gray-300">
-                <tbody>
-                {Object.entries(currentTask.values).map((row, index) => (
-                  <tr key={index}>
-                    <td className="bg-gray-200 border text-xs border-gray-500 px-2 py-2 text-left w-[40%]">{row[0]}</td>
-                    <td className="border text-xs border-gray-500 px-2 py-1 text-left w-[60%]">{row[1]}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+      <div className="flex flex-row max-w-300 gap-x-6 p-4 border-2 border-gray-50 rounded-md items-stretch">
+        {taskInformationComponent(currentTask)}
 
         {/* Divider */}
         <div className="border-l-2 border-gray-50 self-stretch"></div>
 
-        <div className="h-full flex flex-col items-center justify-between">
+        <div className="flex flex-grow flex-col items-center justify-between">
           <div className="flex flex-col items-center">
             <h2 className="text-xl max-w-3xl">
               Your decision
@@ -231,27 +215,27 @@ export default function DomainTask({
             <h3 className="m-2 text-center">
               Considering the applicant's details on the left, do you decide to accept or reject this loan request?
             </h3>
-            <div className="flex flex-row items-center justify-between space-x-2 min-w-[30%] m-2">
+            <div className="flex flex-row items-center justify-between space-x-10 min-w-[30%] m-2">
               <div className="flex items-center space-x-2">
                 <input
                   type="radio"
                   name="choice"
-                  value="Accept"
-                  checked={selectedAnswer === "Accept"}
-                  onChange={(e) => setSelectedAnswer(e.target.value as "Accept")}
+                  value={taskTerms.positive}
+                  checked={selectedAnswer === taskTerms.positive}
+                  onChange={(e) => setSelectedAnswer(e.target.value)}
                 />
-                <p className="text-xl">Accept</p>
+                <p className="text-xl">{taskTerms.positive}</p>
               </div>
 
               <div className="flex items-center space-x-2">
                 <input
                   type="radio"
                   name="choice"
-                  value="Reject"
-                  checked={selectedAnswer === "Reject"}
-                  onChange={(e) => setSelectedAnswer(e.target.value as "Reject")}
+                  value={taskTerms.negative}
+                  checked={selectedAnswer === taskTerms.negative}
+                  onChange={(e) => setSelectedAnswer(e.target.value)}
                 />
-                <p className="text-xl">Reject</p>
+                <p className="text-xl">{taskTerms.negative}</p>
               </div>
             </div>
             <div className="flex flex-row items-center justify-between space-x-5 m-3">
@@ -273,7 +257,7 @@ export default function DomainTask({
           </div>
           
           <div>
-            <h2 className="text-xl max-w-3xl mb-4 text-center flex-1">AI pool</h2>
+            <h2 className="text-xl max-w-3xl mb-4 mt-5 text-center flex-1">AI pool</h2>
             <div className="grid grid-cols-5 gap-4 p-2 border-2 rounded-lg border-gray-50 min-w-175">
               {/* Display AI Systems in instance order */}
               {instancePermutation.map(i => aiSystems[i]).map((system, index) => {
@@ -391,8 +375,8 @@ export default function DomainTask({
                     </div>
                     <h2 className="text-xl max-w-3xl">
                       AI answer: {selectedSystem!.isLemon ? 
-                        (currentTask.truePrediction === "Accept" ? "Reject" : "Accept") : 
-                        (currentTask.truePrediction === "Accept" ? "Accept" : "Reject")}
+                        (currentTask.truePrediction === taskTerms.positive ? taskTerms.negative : taskTerms.positive) : 
+                        currentTask.truePrediction}
                       </h2>
                   </div>
                 )}

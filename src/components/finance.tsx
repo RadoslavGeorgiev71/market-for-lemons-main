@@ -1,14 +1,16 @@
-import DomainTask from "./DomainTask";
+
 import { Disclosure } from "@/types/disclosure";
 
 import data from "../data/data.json";
 import { AISystem } from "@/types/aiSystem";
+import DomainTask from "./domainTask";
+import { Task } from "@/types/task";
 
 
 const financeTasks = data.loanPrediction.instances;
 
 interface FinanceProps{
-  userId: string; // Will be used for user-specific functionality
+  userId: string;
   disclosure: Disclosure;
   instancePermutation: number[];
   currentInstance: number;
@@ -18,21 +20,45 @@ interface FinanceProps{
 }
 
 export default function Finance({ userId, disclosure, instancePermutation, currentInstance, aiSystems, updatePath, onComplete }: FinanceProps) {
+  const financeTerms = {
+    positive: "Accept",
+    negative: "Reject"
+  }
+
+  const financeTaskInfoComponent = (currentTask: Task) => (
+    <div className="flex flex-col items-center h-full">
+        <h2 className="text-xl max-w-3xl mb-4 text-left flex-1">
+          Applicant details
+        </h2>
+
+        <div className="bg-gray-50 p-2 rounded-md min-w-80">
+          <table className="min-w-full border border-gray-300">
+              <tbody>
+              {Object.entries(currentTask.values).map((row, index) => (
+                <tr key={index}>
+                  <td className="bg-gray-200 border text-xs border-gray-500 px-2 py-2 text-left w-[40%]">{row[0]}</td>
+                  <td className="border text-xs border-gray-500 px-2 py-1 text-left w-[60%]">{row[1]}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+    </div>
+  )
 
   return (
-    <div className="flex flex-col items-center gap-6">
-      
-      <DomainTask
-        userId={userId}
-        domain="Finance"
-        disclosure={disclosure}
-        tasks={financeTasks}
-        instancePermutation={instancePermutation}
-        currentInstance={currentInstance}
-        aiSystems={aiSystems}
-        updatePath={updatePath}
-        onComplete={onComplete}
-      />
-    </div>
+    <DomainTask
+      userId={userId}
+      domain="Finance"
+      disclosure={disclosure}
+      tasks={financeTasks}
+      instancePermutation={instancePermutation}
+      currentInstance={currentInstance}
+      aiSystems={aiSystems}
+      updatePath={updatePath}
+      onComplete={onComplete}
+      taskInformationComponent={financeTaskInfoComponent}
+      taskTerms={financeTerms}
+    />
   );
 }
