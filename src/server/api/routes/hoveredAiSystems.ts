@@ -11,7 +11,7 @@ export const hoveredAiSystemRouter = createTRPCRouter({
             const [newHoveredAiSystem] = await ctx.sql`
                 INSERT INTO hovered_ai_systems (user_id, ai_system_id)
                 VALUES (${input.userId}, ${input.aiSystem})
-                RETURNING *
+                RETURNING user_id AS "userId", ai_system_id AS "aiSystem"
             `;
 
             return newHoveredAiSystem

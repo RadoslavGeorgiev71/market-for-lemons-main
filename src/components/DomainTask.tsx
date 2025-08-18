@@ -11,6 +11,7 @@ import { api } from "@/trpc/react";
 
 import { Disclosure } from "@/types/disclosure";
 import Loading from "@/app/loading";
+import { Slider } from "./ui/slider";
 
 interface AISystem {
   id: string;
@@ -58,6 +59,9 @@ export default function DomainTask({
 
   const [showResult, setShowResult] = useState(false);
 
+  const [showSurvey, setShowSurvey] = useState(false);
+  const [selectedLemonNumber, setSelectedLemonNumber] = useState<number | null>(null);
+  const [selectedTrust, setSelectedTrust] = useState<number | null>(null);
 
 
   // API mutations
@@ -78,7 +82,15 @@ export default function DomainTask({
     setSelectedSystemIndex(index);
   };
 
-  const submitAnswer = () => {
+  const submitAnswer = async () => {
+    if (currentTaskIndex == 3 || currentTaskIndex == 8) {
+      setShowSurvey(true);
+    } else {
+      nextTask();
+    }
+  };
+
+  const nextTask = async () => {
     if (chosenOption === "Own Answer") {
       createTask.mutate({
         userId: userId,
@@ -99,10 +111,33 @@ export default function DomainTask({
         systemId: selectedSystem!.id,
         succeeded: selectedSystem!.isLemon,
       });
+
+      if (!revealedSystems.includes(selectedSystem!.id)) {
+        await createHoverAiSystem.mutateAsync({ userId: userId, aiSystem: selectedSystem!.id });
+      }
     }
 
     setSelectedAnswer(null);
     setSelectedSystem(null);
+  };
+
+
+
+  const createSurveyResult = api.surveyResult.create.useMutation();
+
+  const submitSurvey = async () => {
+    await createSurveyResult.mutateAsync({
+      userId: userId,
+      domain: domain,
+      questionNum: currentTaskIndex + 1,
+      selectedLemonNumber: selectedLemonNumber!,
+      selectedTrust: selectedTrust!,
+    });
+
+    setSelectedLemonNumber(null);
+    setSelectedTrust(null);
+    setShowSurvey(false);
+    nextTask();
   };
 
 
@@ -155,7 +190,7 @@ export default function DomainTask({
     return () => clearInterval(hoverTimer.current!); // cleanup
   }, []);
 
-
+  
 
   if (tasksQuery.isFetching) {
     return <Loading />;
@@ -343,9 +378,13 @@ export default function DomainTask({
                           </h3>
                         </div>
                         
-                        <div className="text-center text-xs mt-2 text-muted-foreground">
-                          <p>Accuracy: {selectedSystem!.accuracy}%</p>
-                          <p>Data Quality: {selectedSystem!.dataQuality}</p>
+                        <div className="text-center text-xs min-w-30 mt-2 text-muted-foreground">
+                          {disclosure !== Disclosure.none && (
+                            <p>Accuracy: {selectedSystem!.accuracy}%</p>
+                          )}
+                          {disclosure === Disclosure.full && (
+                            <p>Data Quality: {selectedSystem!.dataQuality}</p>
+                          )}
                         </div>
                     </div>
                     <h2 className="text-xl max-w-3xl">
@@ -368,6 +407,77 @@ export default function DomainTask({
                     setShowResult(false);
                   }}>Finish and Next!</Button>
                 </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {showSurvey && !showResult && (
+        <Dialog
+          open={showSurvey}
+          onOpenChange={(open) => {
+            setShowSurvey(open);
+
+            // Do not allows the closing of the survey if it is not completed
+            if (!open && (selectedLemonNumber === null || selectedTrust === null)) {
+              setShowSurvey(true);
+              return;
+            }
+
+            if (!open) {
+              submitSurvey();
+            }
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle></DialogTitle>
+            </DialogHeader>
+              <h3 className="m-2 text-center">
+                How many lemons do you believe exist on the market?
+              </h3>
+              {/* Two groups of connected radio buttons for numbers 0-5 and 6-10 */}
+              <div className="flex flex-row justify-center space-x-5">
+                {Array.from({ length: 6 }, (_, i) => i).map((n) => (
+                  <label key={n}>
+                    <input type="radio" name="number" value={n} onChange={() => setSelectedLemonNumber(n)}/>
+                    {n}
+                  </label>
+                ))}
+              </div>
+              <div className="flex flex-row justify-center space-x-5">
+                {Array.from({ length: 5 }, (_, i) => i + 6).map((n) => (
+                  <label key={n}>
+                    <input type="radio" name="number" value={n} onChange={() => setSelectedLemonNumber(n)}/>
+                    {n}
+                  </label>
+                ))}
+              </div>
+
+              {/* Divider */}
+              <div className="border-t-2 border-gray-900 self-stretch m-4"></div>
+
+              <h3 className="m-2 text-center">
+                To what extent do you trust the market?
+              </h3>
+              <div className="flex flex-row justify-between">
+                <p>0%</p>
+                <p className="ml-5">50%</p>
+                <p>100%</p>
+              </div>
+              <Slider
+                min={0}
+                max={100}
+                step={10}
+                onValueChange={(value) => setSelectedTrust(value[0])}
+              />
+  
+              <div className="flex flex-col items-center mt-5">
+                {selectedLemonNumber !== null && selectedTrust !== null && (
+                  <Button className="w-50 mb-5" onClick={submitSurvey}>
+                    Submit Survey
+                  </Button>
+                )}
+              </div>
           </DialogContent>
         </Dialog>
       )}

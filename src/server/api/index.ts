@@ -2,12 +2,14 @@ import { createTRPCRouter, createCallerFactory} from "./trpc";
 import { userRouter } from "./routes/users";
 import { taskRouter } from "./routes/tasks";
 import { hoveredAiSystemRouter } from "./routes/hoveredAiSystems";
+import { surveyResultRouter } from "./routes/serveyResults";
 
 // Define the main router that takes the child routes.
 export const appRouter = createTRPCRouter({
     user: userRouter,
     task: taskRouter,
-    hoveredAiSystem: hoveredAiSystemRouter
+    hoveredAiSystem: hoveredAiSystemRouter,
+    surveyResult: surveyResultRouter
 })
 
 // Export the type definition of the API
