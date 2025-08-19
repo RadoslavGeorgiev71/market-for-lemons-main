@@ -63,6 +63,8 @@ export default function Home() {
   const lemonDensity = lemonDensityCode === "l" ? LemonDensity.Low : lemonDensityCode === "m" ? LemonDensity.Medium : LemonDensity.High;
   const taskPermutation = data.taskPermutations[parseInt(taskPermutationNum, 10)];
   const instancePermutation = data.instancePermutations[parseInt(instancePermutationNum, 10)];
+  const aiPermutations = data.aiPermutations[parseInt(instancePermutationNum, 10)];
+  const accuracies = data.accuracies[parseInt(instancePermutationNum, 10)];
   const currentInstance = parseInt(currentInstanceNum, 10);
 
   const aiSystems: AISystem[] = lemonDensity === LemonDensity.Low ? 
@@ -244,12 +246,15 @@ export default function Home() {
   const renderTask = (taskNumber: number) => {
     if (taskPermutation[taskNumber] === 1) {
       return <Finance userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
+       aiPermutation={aiPermutations[taskNumber]} accuracies={accuracies[taskNumber]}
        currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
     } else if (taskPermutation[taskNumber] === 2) {
       return <Reviews userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
+       aiPermutation={aiPermutations[taskNumber]} accuracies={accuracies[taskNumber]}
        currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
     } else {
       return <Medical userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
+       aiPermutation={aiPermutations[taskNumber]} accuracies={accuracies[taskNumber]}
        currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
     }
   };

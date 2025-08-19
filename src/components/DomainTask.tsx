@@ -21,6 +21,8 @@ interface DomainTaskProps {
   domain: string;
   disclosure: Disclosure;
   instancePermutation: number[];
+  aiPermutation: number[];
+  accuracies: number[];
   currentInstance: number;
   tasks: Task[];
   aiSystems: AISystem[];
@@ -40,6 +42,8 @@ export default function DomainTask({
   tasks,
   aiSystems,
   instancePermutation,
+  aiPermutation,
+  accuracies,
   currentInstance,
   updatePath,
   onComplete,
@@ -76,7 +80,7 @@ export default function DomainTask({
   const currentTask = tasks[instancePermutation[currentInstance]];
 
   const handleAiSystemSelect = async (system: AISystem, index: number) => {
-    if (revealedSystems.includes(system.id)) {
+    if (revealedSystems.includes(system.id) || disclosure == Disclosure.none) {
       setSelectedSystem(system);
       setSelectedSystemIndex(index);
     }
@@ -161,6 +165,7 @@ export default function DomainTask({
   const HOVER_TIME = 1000; // ms until reveal
 
   const handleMouseEnter = (system: AISystem) => {
+    if (disclosure == Disclosure.none) return; // no hover when there is no disclosure
     if (revealedSystems.includes(system.id)) return; // already revealed
 
     setHoveredSystem(system.id);
@@ -262,7 +267,7 @@ export default function DomainTask({
             <h2 className="text-xl max-w-3xl mb-4 mt-5 text-center flex-1">AI pool</h2>
             <div className="grid grid-cols-5 gap-4 p-2 border-2 rounded-lg border-gray-50 min-w-175">
               {/* Display AI Systems in instance order */}
-              {instancePermutation.map(i => aiSystems[i]).map((system, index) => {
+              {aiPermutation.map(i => aiSystems[i]).map((system, index) => {
                 const isRevealed = revealedSystems.includes(system.id);
                 const isHovered = hoveredSystem === system.id;
 
@@ -319,7 +324,7 @@ export default function DomainTask({
                         
                         {isRevealed && <div className="text-center text-xs min-w-30 mt-2 text-muted-foreground">
                           {disclosure !== Disclosure.none && (
-                            <p>Accuracy: {system.accuracy}%</p>
+                            <p>Accuracy: {system.accuracy + accuracies[index]}%</p>
                           )}
                           {disclosure === Disclosure.full && (
                             <p>Data Quality: {system.dataQuality}</p>
@@ -368,7 +373,7 @@ export default function DomainTask({
                         
                         <div className="text-center text-xs min-w-30 mt-2 text-muted-foreground">
                           {disclosure !== Disclosure.none && (
-                            <p>Accuracy: {selectedSystem!.accuracy}%</p>
+                            <p>Accuracy: {selectedSystem!.accuracy + accuracies[selectedSystemIndex!]}%</p>
                           )}
                           {disclosure === Disclosure.full && (
                             <p>Data Quality: {selectedSystem!.dataQuality}</p>

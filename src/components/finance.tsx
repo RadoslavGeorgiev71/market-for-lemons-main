@@ -1,4 +1,3 @@
-
 import { Disclosure } from "@/types/disclosure";
 
 import data from "../data/data.json";
@@ -13,13 +12,16 @@ interface FinanceProps{
   userId: string;
   disclosure: Disclosure;
   instancePermutation: number[];
+  aiPermutation: number[];
+  accuracies: number[];
   currentInstance: number;
   aiSystems: AISystem[];
   updatePath: (userId: string, newInstance: number) => void;
   onComplete: () => void;
 }
 
-export default function Finance({ userId, disclosure, instancePermutation, currentInstance, aiSystems, updatePath, onComplete }: FinanceProps) {
+export default function Finance({ userId, disclosure, instancePermutation, aiPermutation, accuracies,
+   currentInstance, aiSystems, updatePath, onComplete }: FinanceProps) {
   const financeTerms = {
     positive: "Accept",
     negative: "Reject"
@@ -53,6 +55,8 @@ export default function Finance({ userId, disclosure, instancePermutation, curre
       disclosure={disclosure}
       tasks={financeTasks}
       instancePermutation={instancePermutation}
+      aiPermutation={aiPermutation}
+      accuracies={accuracies}
       currentInstance={currentInstance}
       aiSystems={aiSystems}
       updatePath={updatePath}
