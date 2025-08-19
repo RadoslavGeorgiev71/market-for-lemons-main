@@ -17,16 +17,13 @@ import { AISystem } from "@/types/aiSystem";
 import Reviews from "@/components/reviews";
 import Medical from "@/components/medical";
 import { useEffect } from "react";
+import { exitPath } from "@/data/constants";
 
 
 export default function Home() {
   const router = useRouter();
   const utils = api.useUtils();
-  const createUser = api.user.create.useMutation({
-    onSuccess: async () => {
-      await utils.user.getUserCount.invalidate();
-    },
-  });
+  const createUser = api.user.create.useMutation();
   const updateState = api.user.updateState.useMutation({
     onSuccess: async () => {
       await utils.user.getUserById.invalidate({ userId: userId ?? "" });
@@ -38,12 +35,15 @@ export default function Home() {
     { userId: userId ?? "" },
     { enabled: !!userId }
   );
-  const getUserCount = api.user.getUserCount.useQuery();
+  const getUserCount = api.user.getUserCount.useMutation();
   const state = getUser.data?.state;
+
 
 
   // Confirmation when refreshing, or trying to change URL(Going back is prevented)
   useEffect(() => {
+    if (!userId) return;
+
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       // Required for the confirmation popup
       event.preventDefault();
@@ -52,20 +52,20 @@ export default function Home() {
     window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, []);
+  }, [userId]);
 
 
 
-  const calculatePath = (userId: string, currentInstance: number) => {
+  const calculatePath = async (userId: string, currentInstance: number) => {
     if (!userId) return "";
-    const userCount: number = getUserCount.data! ?? 0;
+    const userCount: number = await getUserCount.mutateAsync() ?? 0;
     //TODO: to be changed for different instances
     return `/?user_id=${userId}&state=f-l-${userCount % 6}-${userCount % 400}-${currentInstance}`;
   };
 
   const updatePath = (userId: string, newInstance: number) => {
     if (!userId) return "";
-    //TODO: to be changed for different instances
+
     const currentStatePath = `${searchParams?.get("state")}`;
     const newStatePath = currentStatePath.replace(/-(\d+)$/, `-${newInstance}`);
     router.replace(`/?user_id=${userId}&state=${newStatePath}`);
@@ -90,27 +90,98 @@ export default function Home() {
   if (!userId) {
     return (
       <div className="flex flex-col bg-background min-h-screen w-full items-center justify-center gap-6 p-24">
-        <div className="flex w-full h-fit items-center justify-center gap-x-2">
+        <div className="flex w-full h-fit mt-[-50] items-center justify-center gap-x-2">
           <h1 className="text-2xl font-semibold">Market for</h1>
           <CitrusIcon />
         </div>
-        <Button
-          onClick={async () => {
-            const user = await createUser.mutateAsync({
-              userId: uuidv4(),
-              state: State.preTask,
-              //TODO: to be changed for different instances
-              disclosure: Disclosure.full,
-              lemonDensity: LemonDensity.Low,
-            });
-            const path = calculatePath(user.userId, 0);
-            router.replace(path);
-          }}
-          disabled={createUser.isPending}
-        >
-          {createUser.isPending && <Loader2 className="animate-spin" />}
-          Simulate the domains!
-        </Button>
+        <div className="md:h-[70vh]  overflow-y-auto center items-center p-4 bg-gray-50 rounded-md">
+          <h2 className="text-xl max-w-3xl mb-2">Informed Consent</h2>
+          <p>
+            We are a team of researchers from Delft University of Technology, Netherlands,
+             University of Göttingen, Germany, and University of Cagliari, Italy.
+             This study explores how individuals interpret and respond to programming errors,
+            with the aim of improving how such errors are explained based on a programmer’s skill level.
+             You are invited to take part in this research project.
+          </p>
+          <h2 className="text-xl max-w-3xl mb-2 mt-5">Your Participation</h2>
+          <p>
+            If you agree to participate, you will begin by ….. 
+            The entire study should take approximately XXX minutes to complete.
+            You don’t need any special equipment to participate in the study.
+            The study is designed to be completed entirely online.Your involvement is completely voluntary,
+            and you are free to withdraw at any point without penalty. Note, however, that if you choose to withdraw,
+            you will NOT receive any compensation for your participation apart from the base payment.
+          </p>
+          <h2 className="text-xl max-w-3xl mb-2 mt-5">Integrity & Fairness</h2>
+          <p>
+            <strong>Important:</strong> To maintain the integrity of this study, please complete all tasks independently,
+            without using external assistance such as large language models (LLMs), AI tools of any sort,
+            search engines, or help from others. Copy-pasting answers from any source, including external websites or tools,
+            is strictly prohibited and will result in immediate disqualification.
+            Your responses must reflect your own reasoning and understanding.
+            It is essential that you thoughtfully engage with each question rather than submitting answers at random or
+            without proper consideration. We will actively check for signs of inauthentic or careless participation.
+          </p>
+          <p className="font-bold mt-2">The use of LLMs (e.g., ChatGPT, Copilot), or failing to engage meaningfully with the task,
+            will result in your responses being invalidated.
+          </p>
+          <h2 className="text-xl max-w-3xl mb-2 mt-5">What Data Will Be Collected?</h2>
+          <p>
+            We will collect the following information during your participation:
+          </p>
+          <ul className="list-disc pl-6">
+            <li>...</li>
+            <li>Your interaction data: Your interactions in the task interfaces, metrics such as the time you spend on each question, whether the survey window remains active (for example, when you switch tabs or windows), and keystroke data (e.g., if you copy or paste code).</li>
+            <li>Your task and survey responses: The responses you provide within tasks, your answers to the multiple-choice questions, open questions and Likert-style questions throughout the study.</li>
+          </ul>
+          <h2 className="text-xl max-w-3xl mb-2 mt-5">Confidentiality & Data Use</h2>
+          <p>
+            We will only collect the data described above, and your information will be treated with strict confidentiality.
+            Your PROLIFIC_ID will be collected solely for the purposes of tracking participation and ensuring fair monetary
+            compensation. After the data collection phase is complete, all PROLIFIC_IDs will be anonymized so that your responses
+            cannot be linked back to you. All data will be securely stored in password-protected electronic systems.
+            Please note that the data collected in this study may be published or shared in anonymized form.
+            This anonymized dataset may include your responses to the survey and coding submissions,
+            but will exclude any personal identifiers (i.e., PROLIFIC_ID), ensuring that your responses cannot be
+            traced back to you.
+          </p>
+          <h2 className="text-xl max-w-3xl mb-2 mt-5">Contact Information</h2>
+          <p>
+            You can further contact the researchers for any clarification.
+            To do this, send an email to <a href="mailto:A.H.Erlei@tudelft.nl" className="text-blue-600 hover:underline">A.H.Erlei@tudelft.nl</a> for any questions.
+          </p>
+          <h2 className="text-xl max-w-3xl mb-2 mt-5">Your Rights</h2>
+          <p className="mb-4">
+            By clicking  "Yes, I consent"  at the bottom of this page, you confirm that you have carefully read, understood, and consent to the above information.
+          </p>
+          <p className="mb-4">
+            Note: You can exit the task at any time. This will imply revoking your consent, and subsequently, all your data will be discarded from our databases.
+          </p>
+          <p className="mb-4">
+            Do you consent to participate in this study under the above conditions?
+          </p>
+          <div className="flex flex-row w-full items-center justify-center">
+            <Button className="mr-5" 
+              onClick={async () => {
+                const user = await createUser.mutateAsync({
+                  userId: uuidv4(),
+                  state: State.preTask,
+                  //TODO: to be changed for different instances
+                  disclosure: Disclosure.full,
+                  lemonDensity: LemonDensity.Low,
+                });
+                const path = await calculatePath(user.userId, 0);
+                router.replace(path);
+              }}
+              disabled={createUser.isPending}>
+                {createUser.isPending && <Loader2 className="animate-spin"/>}
+              Yes
+            </Button>
+            <Button onClick={() => router.push(exitPath)}>
+              No
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -126,7 +197,8 @@ export default function Home() {
         <>
           <h1 className="text-2xl font-semibold">Contact researchers!</h1>
           <p>
-            Unfortunately, we were unable to find your current submission. Please contact the researchers for support.
+            Unfortunately, we were unable to find your current submission.
+            Please contact the researchers for support at <a href="mailto:A.H.Erlei@tudelft.nl" className="text-blue-600 hover:underline">A.H.Erlei@tudelft.nl</a>
           </p>
         </>
       );

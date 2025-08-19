@@ -1,0 +1,1 @@
+export const exitPath = "https://en.wikipedia.org/wiki/Lemon";
