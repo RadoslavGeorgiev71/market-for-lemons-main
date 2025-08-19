@@ -1,15 +1,14 @@
 import { z } from "zod/v4";
+import { ta } from "zod/v4/locales";
 
 const Task = z.object({
-  user_id: z.string(),
+  userId: z.string(),
   domain: z.string(),
-  question_num: z.number(),
-  question: z.string(),
-  ai_system: z.string(),
-  ai_advice: z.string(),
-  initial_confidence: z.number(),
-  final_confidence: z.number(),
-  final_answer: z.string(),
+  questionNum: z.number(),
+  taskId: z.string(),
+  usedAI: z.boolean(),
+  systemId: z.string(),
+  succeeded: z.boolean(),
 });
 
 export type Task = z.infer<typeof Task>;

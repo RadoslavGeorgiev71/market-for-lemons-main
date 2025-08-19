@@ -3,7 +3,7 @@ import { Disclosure } from "@/types/disclosure";
 import { z } from "zod/v4";
 
 const User = z.object({
-  user_id: z.string(),
+  userId: z.string(),
   state: z.enum(State),
   disclosure: z.enum(Disclosure),
 });

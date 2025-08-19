@@ -10,25 +10,66 @@ import Loading from "./loading";
 import Finance from "@/components/finance";
 import { useRouter } from "next/navigation";
 import { Disclosure } from "@/types/disclosure";
+import { LemonDensity } from "@/types/lemonDensity";
+
+import data from "../data/data.json";
+import { AISystem } from "@/types/aiSystem";
+import Reviews from "@/components/reviews";
+import Medical from "@/components/medical";
 
 
 export default function Home() {
   const router = useRouter();
   const utils = api.useUtils();
-  const createUser = api.user.create.useMutation();
+  const createUser = api.user.create.useMutation({
+    onSuccess: async () => {
+      await utils.user.getUserCount.invalidate();
+    },
+  });
   const updateState = api.user.updateState.useMutation({
     onSuccess: async () => {
-      await utils.user.getUserById.invalidate({ user_id: user_id ?? "" });
+      await utils.user.getUserById.invalidate({ userId: userId ?? "" });
     },
   });
   const searchParams = useSearchParams();
-  const user_id = searchParams?.get("user_id");
+  const userId = searchParams?.get("user_id");
   const getUser = api.user.getUserById.useQuery(
-    { user_id: user_id ?? "" },
-    { enabled: !!user_id }
+    { userId: userId ?? "" },
+    { enabled: !!userId }
   );
+  const getUserCount = api.user.getUserCount.useQuery();
+  const state = getUser.data?.state;
 
-  if (!user_id) {
+  const calculatePath = (userId: string, currentInstance: number) => {
+    if (!userId) return "";
+    const userCount: number = getUserCount.data! ?? 0;
+    //TODO: to be changed for different instances
+    return `/?user_id=${userId}&state=f-l-${userCount % 6}-${userCount % 400}-${currentInstance}`;
+  };
+
+  const updatePath = (userId: string, newInstance: number) => {
+    if (!userId) return "";
+    //TODO: to be changed for different instances
+    const currentStatePath = `${searchParams?.get("state")}`;
+    const newStatePath = currentStatePath.replace(/-(\d+)$/, `-${newInstance}`);
+    router.push(`/?user_id=${userId}&state=${newStatePath}`);
+  };
+
+  // Fetch path parameters
+  const userState = searchParams?.get("state");
+  const stateParts = userState?.split("-") ?? [];
+  const [disclosureCode, lemonDensityCode, taskPermutationNum, instancePermutationNum, currentInstanceNum] = stateParts;
+  const disclosure = disclosureCode === "f" ? Disclosure.full : disclosureCode === "p" ? Disclosure.partial : Disclosure.none;
+  const lemonDensity = lemonDensityCode === "l" ? LemonDensity.Low : lemonDensityCode === "m" ? LemonDensity.Medium : LemonDensity.High;
+  const taskPermutation = data.taskPermutations[parseInt(taskPermutationNum, 10)];
+  const instancePermutation = data.instancePermutations[parseInt(instancePermutationNum, 10)];
+  const currentInstance = parseInt(currentInstanceNum, 10);
+
+  const aiSystems: AISystem[] = lemonDensity === LemonDensity.Low ? 
+    data.ais.lowDensity : 
+    lemonDensity === LemonDensity.Medium ? data.ais.mediumDensity : data.ais.highDensity;
+
+  if (!userId) {
     return (
       <div className="flex flex-col bg-background min-h-screen w-full items-center justify-center gap-6 p-24">
         <div className="flex w-full h-fit items-center justify-center gap-x-2">
@@ -38,11 +79,14 @@ export default function Home() {
         <Button
           onClick={async () => {
             const user = await createUser.mutateAsync({
-              user_id: uuidv4(),
+              userId: uuidv4(),
               state: State.preTask,
+              //TODO: to be changed for different instances
               disclosure: Disclosure.full,
+              lemonDensity: LemonDensity.Low,
             });
-            router.push(`/?user_id=${user.user_id}`);
+            const path = calculatePath(user.userId, 0);
+            router.push(path);
           }}
           disabled={createUser.isPending}
         >
@@ -69,8 +113,7 @@ export default function Home() {
         </>
       );
     }
-    const state = getUser.data?.state;
-    const disclosure = getUser.data?.disclosure;
+    
     if (!state) return <div>Invalid state</div>;
 
     switch (state) {
@@ -80,7 +123,7 @@ export default function Home() {
             <h1 className="text-2xl font-semibold">Pre-Task</h1>
             <Button onClick={() => {
               updateState.mutate({
-                user_id: user_id!,
+                userId: userId!,
                 state: State.tutorial,
               });
             }} disabled={updateState.isPending}>
@@ -95,26 +138,34 @@ export default function Home() {
             <h1 className="text-2xl font-semibold">Tutorial</h1>
             <Button onClick={() => {
               updateState.mutate({
-                user_id: user_id!,
-                state: State.finance,
+                userId: userId!,
+                state: State.task1,
               });
             }} disabled={updateState.isPending}>
               {updateState.isPending && <Loader2 className="animate-spin" />}
-              Start Finance Task
+              Start your first task
             </Button>
           </div>
         );
-      case State.finance:
-        return (
-          <Finance user_id={user_id!} disclosure={disclosure} />
-        );
+      case State.task1:
+        return renderTask(1);
+      case State.postTask1:
+        return renderPostTask(1);
+      case State.task2:
+        return renderTask(2);
+      case State.postTask2:
+        return renderPostTask(2);
+      case State.task3:
+        return renderTask(3);
+      case State.postTask3:
+        return renderPostTask(3);
       case State.cybersecurity:
         return (
           <div className="flex flex-col items-center gap-6">
             <h1 className="text-2xl font-semibold">Cybersecurity Task</h1>
             <Button onClick={() => {
               updateState.mutate({
-                user_id: user_id!,
+                userId: userId!,
                 state: State.medical,
               });
             }} disabled={updateState.isPending}>
@@ -129,7 +180,7 @@ export default function Home() {
             <h1 className="text-2xl font-semibold">Medical Task</h1>
             <Button onClick={() => {
               updateState.mutate({
-                user_id: user_id!,
+                userId: userId!,
                 state: State.postTask,
               });
             }} disabled={updateState.isPending}>
@@ -144,7 +195,7 @@ export default function Home() {
             <h1 className="text-2xl font-semibold">Post-Task</h1>
             <Button onClick={() => {
               updateState.mutate({
-                user_id: user_id!,
+                userId: userId!,
                 state: State.completion,
               });
             }} disabled={updateState.isPending}>
@@ -169,6 +220,55 @@ export default function Home() {
       default:
         return <div>Invalid state</div>;
     }
+  };
+
+  const onTaskCompletion = () => {
+    if (state === State.task1) {
+      updateState.mutate({
+        userId: userId!,
+        state: State.postTask1,
+      });
+    } else if (state === State.task2) {
+      updateState.mutate({
+        userId: userId!,
+        state: State.postTask2,
+      });
+    } else {
+      updateState.mutate({
+        userId: userId!,
+        state: State.postTask3,
+      });
+    }
+  };
+
+  const renderTask = (taskNumber: number) => {
+    if (taskPermutation[taskNumber] === 1) {
+      return <Finance userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
+       currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
+    } else if (taskPermutation[taskNumber] === 2) {
+      return <Reviews userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
+       currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
+    } else {
+      return <Medical userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
+       currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
+    }
+  };
+
+  const renderPostTask = (taskNumber: number) => {
+    return (
+      <div className="flex flex-col items-center gap-6">
+        <h1 className="text-2xl font-semibold">You have successfully completed Task {taskNumber}!</h1>
+        <Button onClick={() => {
+          updateState.mutate({
+            userId: userId!,
+            state: State.medical,
+          });
+        }} disabled={updateState.isPending}>
+          {updateState.isPending && <Loader2 className="animate-spin" />}
+          Proceed to {taskNumber == 3 ? "end of study" : `Task ${taskNumber + 1}`}
+        </Button>
+      </div>
+    );
   };
 
   return (

@@ -10,11 +10,11 @@ export default function RevokeConsent() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const searchParams = useSearchParams();
-    const user_id = searchParams?.get("user_id");
+    const userId = searchParams?.get("user_id");
     const utils = api.useUtils();
     const deleteUser = api.user.delete.useMutation({
         onSuccess: async () => {
-            await utils.user.getUserById.invalidate({ user_id: user_id ?? "" });
+            await utils.user.getUserById.invalidate({ userId: userId ?? "" });
         },
     });
 
@@ -36,8 +36,9 @@ export default function RevokeConsent() {
                 <Button 
                     variant="destructive"
                     onClick={() => {
-                        if (!user_id) return;
-                        deleteUser.mutate({ user_id });
+                        if (!userId) return;
+                        //TODO: To redirect back
+                        deleteUser.mutate({ userId: userId });
                         setIsDialogOpen(false);
                     }}
                 >
