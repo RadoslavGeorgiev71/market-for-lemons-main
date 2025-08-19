@@ -92,6 +92,8 @@ export const userRouter = createTRPCRouter({
       const sql = ctx.sql;
       await sql`DELETE FROM users WHERE user_id = ${input.userId}`;
       await sql`DELETE FROM tasks WHERE user_id = ${input.userId}`;
+      await sql`DELETE FROM survey_results WHERE user_id = ${input.userId}`;
+      await sql`DELETE FROM hovered_ai_systems WHERE user_id = ${input.userId}`;
       return { success: true };
     }),
 });

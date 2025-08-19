@@ -5,9 +5,9 @@ import DomainTask from "./domainTask";
 import { Task } from "@/types/task";
 
 
-const reviewTasks = data.deceptionDetection.instances;
+const medicalTasks = data.skinCancer.instances;
 
-interface ReviewProps {
+interface MedicalProps {
     userId: string;
     disclosure: Disclosure;
     instancePermutation: number[];
@@ -17,35 +17,37 @@ interface ReviewProps {
     onComplete: () => void;
 }
 
-export default function Reviews({ userId, disclosure, instancePermutation, currentInstance, aiSystems, updatePath, onComplete }: ReviewProps) {
-    const reviewTerms = {
-        positive: "Genuine",
-        negative: "Deceptive"
+export default function Medical({ userId, disclosure, instancePermutation, currentInstance, aiSystems, updatePath, onComplete }: MedicalProps) {
+    const medicalTerms = {
+        positive: "Benign",
+        negative: "Cancer"
     }
 
-    const reviewTaskInfoComponent = (currentTask: Task) => (
+    const medicalTaskInfoComponent = (currentTask: Task) => (
         <div className="flex flex-col items-center h-full">
             <h2 className="h-5 mb-5 text-xl max-w-3xl">
-                Hotel Review
+                Skin image
             </h2>
 
-            <p>{`"${currentTask.values.review}"`}</p>
+            <div className="bg-gray-50 w-100 h-100">
+                
+            </div>
         </div>
     )
 
     return (
         <DomainTask
             userId={userId}
-            domain="Deception detection"
+            domain="Skin cancer detection"
             disclosure={disclosure}
-            tasks={reviewTasks}
+            tasks={medicalTasks}
             instancePermutation={instancePermutation}
             currentInstance={currentInstance}
             aiSystems={aiSystems}
             updatePath={updatePath}
             onComplete={onComplete}
-            taskInformationComponent={reviewTaskInfoComponent}
-            taskTerms={reviewTerms}
+            taskInformationComponent={medicalTaskInfoComponent}
+            taskTerms={medicalTerms}
         />
     )
 }

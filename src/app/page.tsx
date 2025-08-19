@@ -15,6 +15,7 @@ import { LemonDensity } from "@/types/lemonDensity";
 import data from "../data/data.json";
 import { AISystem } from "@/types/aiSystem";
 import Reviews from "@/components/reviews";
+import Medical from "@/components/medical";
 
 
 export default function Home() {
@@ -246,6 +247,9 @@ export default function Home() {
        currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
     } else if (taskPermutation[taskNumber] === 2) {
       return <Reviews userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
+       currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
+    } else {
+      return <Medical userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
        currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
     }
   };

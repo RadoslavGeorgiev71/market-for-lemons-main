@@ -37,6 +37,7 @@ export default function RevokeConsent() {
                     variant="destructive"
                     onClick={() => {
                         if (!userId) return;
+                        //TODO: To redirect back
                         deleteUser.mutate({ userId: userId });
                         setIsDialogOpen(false);
                     }}
