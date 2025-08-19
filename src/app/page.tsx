@@ -18,6 +18,8 @@ import Reviews from "@/components/reviews";
 import Medical from "@/components/medical";
 import { useEffect } from "react";
 import { exitPath } from "@/data/constants";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Page1 from "./instructionPages/page1";
 
 
 export default function Home() {
@@ -94,7 +96,7 @@ export default function Home() {
           <h1 className="text-2xl font-semibold">Market for</h1>
           <CitrusIcon />
         </div>
-        <div className="md:h-[70vh]  overflow-y-auto center items-center p-4 bg-gray-50 rounded-md">
+        <div className="md:h-[70vh] overflow-y-auto center items-center p-4 bg-gray-50 rounded-md">
           <h2 className="text-xl max-w-3xl mb-2">Informed Consent</h2>
           <p>
             We are a team of researchers from Delft University of Technology, Netherlands,
@@ -165,7 +167,7 @@ export default function Home() {
               onClick={async () => {
                 const user = await createUser.mutateAsync({
                   userId: uuidv4(),
-                  state: State.preTask,
+                  state: State.instructions,
                   //TODO: to be changed for different instances
                   disclosure: Disclosure.full,
                   lemonDensity: LemonDensity.Low,
@@ -207,6 +209,45 @@ export default function Home() {
     if (!state) return <div>Invalid state</div>;
 
     switch (state) {
+      case State.instructions:
+        return (
+          <>
+            <div className="flex w-full h-fit mt-[-50] items-center justify-center gap-x-2">
+              <h1 className="text-2xl font-semibold">Instructions</h1>
+            </div>
+            <div className="md:h-[70vh] overflow-y-auto center items-center p-4 bg-gray-50 rounded-md">
+              <p className="mb-2">Thank you for participating in this experiment!</p>
+              <p className="mb-2">
+              The experiment will take approximately 20 minutes. You will be paid 1.5$ for completing the experiment.
+              Additionally, you can earn a bonus of up to 3.6$ that depends on your choices, as explained in more detail on the next pages.
+              Throughout the experiment, we will use Coins instead of Dollars.
+              The Coins you earn will be converted into Dollars at the end of the experiment.
+              The following conversion rate applies: 100 Coins = 0.4$</p>
+              <p className="mb-2">Please read the following instructions carefully.
+                After the instructions, you will need to answer a number of comprehension questions.
+                You can only proceed with the experiment after answering them correctly within three trials.
+                If you did not successfully answer all three comprehension questions after three trials,
+                you will not be allowed to participate in the experiment.</p>
+
+              <Tabs defaultValue="page1" className="">
+                <TabsList className="grid grid-cols-2 mt-5 space-x-2">
+                  <TabsTrigger value="page1">Page 1</TabsTrigger>
+                  <TabsTrigger value="page2">Page 2</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="page1">
+                  <Page1 disclosure={disclosure}></Page1>
+                </TabsContent>
+
+                <TabsContent value="page2">
+                  <div className="p-4 border rounded-lg">
+                    Change your password here.
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </>
+        );
       case State.preTask:
         return (
           <div className="flex flex-col items-center gap-6">

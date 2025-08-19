@@ -1,5 +1,7 @@
 export enum State {
   preTask = "preTask",
+
+  instructions = "instructions",
   tutorial = "tutorial",
   task1 = "task1",
   postTask1 = "postTask1",
