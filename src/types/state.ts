@@ -7,12 +7,6 @@ export enum State {
   postTask2 = "postTask2",
   task3 = "task3",
   postTask3 = "postTask3",
-
-  
-  finance = "finance",
-  postFinance = "postFinance",
-  cybersecurity = "cybersecurity",
-  medical = "medical",
   postTask = "postTask",
   revokedConsent = "revokedConsent",
   completion = "completion",

@@ -16,6 +16,7 @@ import data from "../data/data.json";
 import { AISystem } from "@/types/aiSystem";
 import Reviews from "@/components/reviews";
 import Medical from "@/components/medical";
+import { useEffect } from "react";
 
 
 export default function Home() {
@@ -40,6 +41,21 @@ export default function Home() {
   const getUserCount = api.user.getUserCount.useQuery();
   const state = getUser.data?.state;
 
+
+  // Confirmation when refreshing, or trying to change URL(Going back is prevented)
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      // Required for the confirmation popup
+      event.preventDefault();
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
+
+
+
   const calculatePath = (userId: string, currentInstance: number) => {
     if (!userId) return "";
     const userCount: number = getUserCount.data! ?? 0;
@@ -52,7 +68,7 @@ export default function Home() {
     //TODO: to be changed for different instances
     const currentStatePath = `${searchParams?.get("state")}`;
     const newStatePath = currentStatePath.replace(/-(\d+)$/, `-${newInstance}`);
-    router.push(`/?user_id=${userId}&state=${newStatePath}`);
+    router.replace(`/?user_id=${userId}&state=${newStatePath}`);
   };
 
   // Fetch path parameters
@@ -88,7 +104,7 @@ export default function Home() {
               lemonDensity: LemonDensity.Low,
             });
             const path = calculatePath(user.userId, 0);
-            router.push(path);
+            router.replace(path);
           }}
           disabled={createUser.isPending}
         >
@@ -161,36 +177,6 @@ export default function Home() {
         return renderTask(3);
       case State.postTask3:
         return renderPostTask(3);
-      case State.cybersecurity:
-        return (
-          <div className="flex flex-col items-center gap-6">
-            <h1 className="text-2xl font-semibold">Cybersecurity Task</h1>
-            <Button onClick={() => {
-              updateState.mutate({
-                userId: userId!,
-                state: State.medical,
-              });
-            }} disabled={updateState.isPending}>
-              {updateState.isPending && <Loader2 className="animate-spin" />}
-              Next Task
-            </Button>
-          </div>
-        );
-      case State.medical:
-        return (
-          <div className="flex flex-col items-center gap-6">
-            <h1 className="text-2xl font-semibold">Medical Task</h1>
-            <Button onClick={() => {
-              updateState.mutate({
-                userId: userId!,
-                state: State.postTask,
-              });
-            }} disabled={updateState.isPending}>
-              {updateState.isPending && <Loader2 className="animate-spin" />}
-              Complete Tasks
-            </Button>
-          </div>
-        );
       case State.postTask:
         return (
           <div className="flex flex-col items-center gap-6">
@@ -266,7 +252,7 @@ export default function Home() {
         <Button onClick={() => {
           updateState.mutate({
             userId: userId!,
-            state: State.medical,
+            state: State[`task${taskNumber + 1}` as keyof typeof State],
           });
         }} disabled={updateState.isPending}>
           {updateState.isPending && <Loader2 className="animate-spin" />}
