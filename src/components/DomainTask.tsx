@@ -76,8 +76,10 @@ export default function DomainTask({
   const currentTask = tasks[instancePermutation[currentInstance]];
 
   const handleAiSystemSelect = async (system: AISystem, index: number) => {
-    setSelectedSystem(system);
-    setSelectedSystemIndex(index);
+    if (revealedSystems.includes(system.id)) {
+      setSelectedSystem(system);
+      setSelectedSystemIndex(index);
+    }
   };
 
   const submitAnswer = async () => {
@@ -113,7 +115,7 @@ export default function DomainTask({
       });
 
       if (!revealedSystems.includes(selectedSystem!.id)) {
-        await createHoverAiSystem.mutateAsync({ userId: userId, aiSystem: selectedSystem!.id });
+        await createHoverAiSystem.mutateAsync({ userId: userId, domain: domain, aiSystem: selectedSystem!.id });
       }
     }
 
@@ -145,7 +147,7 @@ export default function DomainTask({
 
 
   const revealedSystems: String[] = api.hoveredAiSystem.getHoveredAiSystems
-    .useQuery({ userId }).data?.map((system) => String(system.aiSystemId)) || [];
+    .useQuery({ userId, domain }).data?.map((system) => String(system.aiSystemId)) || [];
 
   const createHoverAiSystem = api.hoveredAiSystem.create.useMutation(
     {
@@ -172,7 +174,7 @@ export default function DomainTask({
 
       if (pct >= 100) {
         clearInterval(hoverTimer.current!);
-        await createHoverAiSystem.mutateAsync({ userId: userId, aiSystem: system.id });
+        await createHoverAiSystem.mutateAsync({ userId: userId, domain, aiSystem: system.id });
         setHoveredSystem(null);
       }
     }, 16);
