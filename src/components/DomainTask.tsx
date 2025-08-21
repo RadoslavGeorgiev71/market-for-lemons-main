@@ -223,27 +223,29 @@ export default function DomainTask({
               Considering the applicant's details on the left, do you decide to accept or reject this loan request?
             </h3>
             <div className="flex flex-row items-center justify-between space-x-10 min-w-[30%] m-2">
-              <div className="flex items-center space-x-2">
+              <label className="flex items-center space-x-2 cursor-pointer">
                 <input
                   type="radio"
                   name="choice"
                   value={taskTerms.positive}
                   checked={selectedAnswer === taskTerms.positive}
                   onChange={(e) => setSelectedAnswer(e.target.value)}
+                  className="cursor-pointer"
                 />
-                <p className="text-xl">{taskTerms.positive}</p>
-              </div>
+                <span className="text-xl">{taskTerms.positive}</span>
+              </label>
 
-              <div className="flex items-center space-x-2">
+              <label className="flex items-center space-x-2 cursor-pointer">
                 <input
                   type="radio"
                   name="choice"
                   value={taskTerms.negative}
                   checked={selectedAnswer === taskTerms.negative}
                   onChange={(e) => setSelectedAnswer(e.target.value)}
+                  className="cursor-pointer"
                 />
-                <p className="text-xl">{taskTerms.negative}</p>
-              </div>
+                <span className="text-xl">{taskTerms.negative}</span>
+              </label>
             </div>
             <div className="flex flex-row items-center justify-between space-x-5 m-3">
               {selectedSystem !== null && (

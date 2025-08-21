@@ -16,11 +16,21 @@ import data from "../data/data.json";
 import { AISystem } from "@/types/aiSystem";
 import Reviews from "@/components/reviews";
 import Medical from "@/components/medical";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { exitPath } from "@/data/constants";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Page1 from "./instructionPages/page1";
+import Page2 from "./instructionPages/page2";
+import Page3 from "./instructionPages/page3";
+import Page4 from "./instructionPages/page4";
+import Page5 from "./instructionPages/page5";
+import ComprehensionQuestions from "./instructionPages/comprehensionQuestions";
 
+
+const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+    // Required for the confirmation popup
+    event.preventDefault();
+};
 
 export default function Home() {
   const router = useRouter();
@@ -42,14 +52,11 @@ export default function Home() {
 
 
 
+  const ignoreBeforeUnload = useRef(false);
+
   // Confirmation when refreshing, or trying to change URL(Going back is prevented)
   useEffect(() => {
-    if (!userId) return;
-
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      // Required for the confirmation popup
-      event.preventDefault();
-    };
+    if (!userId || ignoreBeforeUnload.current) return;
 
     window.addEventListener("beforeunload", handleBeforeUnload);
 
@@ -173,6 +180,7 @@ export default function Home() {
                   lemonDensity: LemonDensity.Low,
                 });
                 const path = await calculatePath(user.userId, 0);
+                sessionStorage.setItem("canLeave", JSON.stringify(false));
                 router.replace(path);
               }}
               disabled={createUser.isPending}>
@@ -215,14 +223,14 @@ export default function Home() {
             <div className="flex w-full h-fit mt-[-50] items-center justify-center gap-x-2">
               <h1 className="text-2xl font-semibold">Instructions</h1>
             </div>
-            <div className="md:h-[70vh] overflow-y-auto center items-center p-4 bg-gray-50 rounded-md">
+            <div className="max-h-[70vh] overflow-y-auto center items-center p-4 bg-gray-50 rounded-md">
               <p className="mb-2">Thank you for participating in this experiment!</p>
               <p className="mb-2">
-              The experiment will take approximately 20 minutes. You will be paid 1.5$ for completing the experiment.
-              Additionally, you can earn a bonus of up to 3.6$ that depends on your choices, as explained in more detail on the next pages.
-              Throughout the experiment, we will use Coins instead of Dollars.
-              The Coins you earn will be converted into Dollars at the end of the experiment.
-              The following conversion rate applies: 100 Coins = 0.4$</p>
+              The experiment will take approximately 20 minutes. You will be paid £1.5 for completing the experiment.
+              Additionally, you can earn a bonus of up to  £3.6 that depends on your choices, as explained in more detail on the next pages.
+              Throughout the experiment, we will use Coins instead of Pounds.
+              The Coins you earn will be converted into Pounds at the end of the experiment.
+              The following conversion rate applies: 100 Coins =  £0.4</p>
               <p className="mb-2">Please read the following instructions carefully.
                 After the instructions, you will need to answer a number of comprehension questions.
                 You can only proceed with the experiment after answering them correctly within three trials.
@@ -230,9 +238,13 @@ export default function Home() {
                 you will not be allowed to participate in the experiment.</p>
 
               <Tabs defaultValue="page1" className="">
-                <TabsList className="grid grid-cols-2 mt-5 space-x-2">
-                  <TabsTrigger value="page1">Page 1</TabsTrigger>
-                  <TabsTrigger value="page2">Page 2</TabsTrigger>
+                <TabsList className="flex mt-5 space-x-2">
+                  <TabsTrigger className="w-20" value="page1">Page 1</TabsTrigger>
+                  <TabsTrigger className="w-20" value="page2">Page 2</TabsTrigger>
+                  <TabsTrigger className="w-20" value="page3">Page 3</TabsTrigger>
+                  <TabsTrigger className="w-20" value="page4">Page 4</TabsTrigger>
+                  <TabsTrigger className="w-20" value="page5">Page 5</TabsTrigger>
+                  <TabsTrigger value="comprehension">Comprehension Questions</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="page1">
@@ -240,9 +252,23 @@ export default function Home() {
                 </TabsContent>
 
                 <TabsContent value="page2">
-                  <div className="p-4 border rounded-lg">
-                    Change your password here.
-                  </div>
+                  <Page2></Page2>
+                </TabsContent>
+
+                <TabsContent value="page3">
+                  <Page3></Page3>
+                </TabsContent>
+
+                <TabsContent value="page4">
+                  <Page4 taskPermutation={taskPermutation}></Page4>
+                </TabsContent>
+
+                <TabsContent value="page5">
+                  <Page5></Page5>
+                </TabsContent>
+
+                <TabsContent value="comprehension">
+                  <ComprehensionQuestions disclosure={disclosure} userId={userId} updateState={updateState} handleBeforeUnload={handleBeforeUnload} />
                 </TabsContent>
               </Tabs>
             </div>
