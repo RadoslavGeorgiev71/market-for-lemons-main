@@ -67,6 +67,7 @@ export default function DomainTask({
   const [selectedTrust, setSelectedTrust] = useState<number | null>(null);
 
 
+
   // API mutations
   const utils = api.useUtils();
   const createTask = api.task.create.useMutation({
@@ -198,6 +199,17 @@ export default function DomainTask({
   useEffect(() => {
     return () => clearInterval(hoverTimer.current!); // cleanup
   }, []);
+
+
+
+  const getAIResponse = (system: AISystem): string => {
+    const rng = Math.random() * 100;
+    if (system.isLemon) {
+      return rng < 15 ? taskTerms.positive : taskTerms.negative;
+    } else {
+      return rng < 90 ? taskTerms.positive : taskTerms.negative;
+    }
+  }
 
   
 
@@ -383,10 +395,8 @@ export default function DomainTask({
                         </div>
                     </div>
                     <h2 className="text-xl max-w-3xl">
-                      AI answer: {selectedSystem!.isLemon ? 
-                        (currentTask.truePrediction === taskTerms.positive ? taskTerms.negative : taskTerms.positive) : 
-                        currentTask.truePrediction}
-                      </h2>
+                      AI answer: {getAIResponse(selectedSystem!)}
+                    </h2>
                   </div>
                 )}
 
