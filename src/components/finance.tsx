@@ -24,7 +24,8 @@ export default function Finance({ userId, disclosure, instancePermutation, aiPer
    currentInstance, aiSystems, updatePath, onComplete }: FinanceProps) {
   const financeTerms = {
     positive: "Accept",
-    negative: "Reject"
+    negative: "Reject",
+    question: "Considering the applicant's details on the left, do you decide to accept or reject this loan request?"
   }
 
   const financeTaskInfoComponent = (currentTask: Task) => (

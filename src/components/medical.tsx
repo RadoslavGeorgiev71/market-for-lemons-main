@@ -3,6 +3,7 @@ import data from "../data/data.json";
 import { AISystem } from "@/types/aiSystem";
 import DomainTask from "./domainTask";
 import { Task } from "@/types/task";
+import Image from "next/image";
 
 
 const medicalTasks = data.skinCancer.instances;
@@ -23,7 +24,8 @@ export default function Medical({ userId, disclosure, instancePermutation, aiPer
      currentInstance, aiSystems, updatePath, onComplete }: MedicalProps) {
     const medicalTerms = {
         positive: "Benign",
-        negative: "Cancer"
+        negative: "Cancer",
+        question: "Considering the image on the left, does it appear to be benign or show signs of cancer?"
     }
 
     const medicalTaskInfoComponent = (currentTask: Task) => (
@@ -32,9 +34,13 @@ export default function Medical({ userId, disclosure, instancePermutation, aiPer
                 Skin image
             </h2>
 
-            <div className="bg-gray-50 w-100 h-100">
-                
-            </div>
+            <Image 
+                src={`/images/cancer_images/${currentTask.values.file}`} 
+                alt="Photo" 
+                width={512} 
+                height={512} 
+                className="rounded-sm m-5"
+            />
         </div>
     )
 

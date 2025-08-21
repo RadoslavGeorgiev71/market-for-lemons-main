@@ -23,7 +23,8 @@ export default function Reviews({ userId, disclosure, instancePermutation, aiPer
     currentInstance, aiSystems, updatePath, onComplete }: ReviewProps) {
     const reviewTerms = {
         positive: "Genuine",
-        negative: "Deceptive"
+        negative: "Deceptive",
+        question: "Considering the hotel review on the left, is it genuine or deceptive?"
     }
 
     const reviewTaskInfoComponent = (currentTask: Task) => (

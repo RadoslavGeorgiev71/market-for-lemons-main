@@ -32,6 +32,7 @@ interface DomainTaskProps {
   taskTerms: {
     positive: string;
     negative: string;
+    question: string;
   }
 }
 
@@ -232,7 +233,7 @@ export default function DomainTask({
               Your decision
             </h2>
             <h3 className="m-2 text-center">
-              Considering the applicant's details on the left, do you decide to accept or reject this loan request?
+              {taskTerms.question}
             </h3>
             <div className="flex flex-row items-center justify-between space-x-10 min-w-[30%] m-2">
               <label className="flex items-center space-x-2 cursor-pointer">
