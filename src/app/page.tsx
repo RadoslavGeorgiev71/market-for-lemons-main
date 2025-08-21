@@ -25,6 +25,7 @@ import Page3 from "./instructionPages/page3";
 import Page4 from "./instructionPages/page4";
 import Page5 from "./instructionPages/page5";
 import ComprehensionQuestions from "./instructionPages/comprehensionQuestions";
+import Tutorial from "./instructionPages/tutorial";
 
 
 const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -198,7 +199,7 @@ export default function Home() {
 
 
   const renderStateContent = () => {
-    if (getUser.isLoading) {
+    if (getUser.isLoading || updateState.isPending) {
       return <Loading />;
     }
 
@@ -244,6 +245,7 @@ export default function Home() {
                   <TabsTrigger className="w-20" value="page3">Page 3</TabsTrigger>
                   <TabsTrigger className="w-20" value="page4">Page 4</TabsTrigger>
                   <TabsTrigger className="w-20" value="page5">Page 5</TabsTrigger>
+                  <TabsTrigger value="tutorial">Tutorial</TabsTrigger>
                   <TabsTrigger value="comprehension">Comprehension Questions</TabsTrigger>
                 </TabsList>
 
@@ -265,6 +267,10 @@ export default function Home() {
 
                 <TabsContent value="page5">
                   <Page5></Page5>
+                </TabsContent>
+
+                <TabsContent value="tutorial">
+                  <Tutorial userId={userId} disclosure={disclosure}></Tutorial>
                 </TabsContent>
 
                 <TabsContent value="comprehension">
@@ -366,6 +372,9 @@ export default function Home() {
         state: State.postTask3,
       });
     }
+
+    // reset the current instance
+    updatePath(userId!, 0);
   };
 
   const renderTask = (taskNumber: number) => {
@@ -385,6 +394,7 @@ export default function Home() {
   };
 
   const renderPostTask = (taskNumber: number) => {
+
     return (
       <div className="flex flex-col items-center gap-6">
         <h1 className="text-2xl font-semibold">You have successfully completed Task {taskNumber}!</h1>
