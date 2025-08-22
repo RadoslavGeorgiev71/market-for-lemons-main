@@ -91,8 +91,6 @@ export default function DomainTask({
   const submitAnswer = async () => {
     if (currentInstance == 3 || currentInstance == 8) {
       setShowSurvey(true);
-    } else if (currentInstance == 9) {
-      onComplete?.();
     } else {
       nextTask();
     }
@@ -129,6 +127,10 @@ export default function DomainTask({
 
     setSelectedAnswer(null);
     setSelectedSystem(null);
+
+    if (currentInstance == tasks.length - 1) {
+      onComplete?.();
+    }
   };
 
 

@@ -7,6 +7,7 @@ import { Task } from "@/types/task";
 
 
 const financeTasks = data.loanPrediction.instances;
+const financeTutorialTasks = data.tutorial.loanPrediction;
 
 interface FinanceProps{
   userId: string;
@@ -18,10 +19,11 @@ interface FinanceProps{
   aiSystems: AISystem[];
   updatePath: (userId: string, newInstance: number) => void;
   onComplete: () => void;
+  tutorial?: boolean;
 }
 
 export default function Finance({ userId, disclosure, instancePermutation, aiPermutation, accuracies,
-   currentInstance, aiSystems, updatePath, onComplete }: FinanceProps) {
+   currentInstance, aiSystems, updatePath, onComplete, tutorial }: FinanceProps) {
   const financeTerms = {
     positive: "Accept",
     negative: "Reject",
@@ -54,7 +56,7 @@ export default function Finance({ userId, disclosure, instancePermutation, aiPer
       userId={userId}
       domain="Finance"
       disclosure={disclosure}
-      tasks={financeTasks}
+      tasks={tutorial ? financeTutorialTasks : financeTasks}
       instancePermutation={instancePermutation}
       aiPermutation={aiPermutation}
       accuracies={accuracies}

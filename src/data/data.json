@@ -35921,7 +35921,7 @@
                 "id": "6764a256-bc79-4c6f-8b3b-3af25abf6f1c",
                 "truePrediction": "Cancer",
                 "values": {
-                    "file": "ISIC_33520.jpg"
+                    "file": "ISIC_0033520.jpg"
                 }
             },
             {
@@ -35935,7 +35935,7 @@
                 "id": "23ab40cf-c158-4bca-858f-8c01acabc1d7",
                 "truePrediction": "Cancer",
                 "values": {
-                    "file": "ISIC_32684.jpg"
+                    "file": "ISIC_0032684.jpg"
                 }
             }
         ]

@@ -1,7 +1,9 @@
 import { Disclosure } from "@/types/disclosure";
 import Image from "next/image";
+import { useEffect, useRef } from "react";
 
 export default function Page1({disclosure}: {disclosure: Disclosure}) {
+
   return (
     <div className="p-4 border rounded-lg">
         <p>You will complete 10 rounds of three prediction tasks.

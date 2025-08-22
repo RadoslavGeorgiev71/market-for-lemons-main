@@ -93,6 +93,9 @@ export default function Home() {
   const accuracies = data.accuracies[parseInt(instancePermutationNum, 10)];
   const currentInstance = parseInt(currentInstanceNum, 10);
 
+  const tutorialAiPermutations = data.aiPermutations[(parseInt(instancePermutationNum, 10) + 1) % 400];
+  const tutorialAccuracies = data.accuracies[(parseInt(instancePermutationNum, 10) + 1) % 400];
+
   const aiSystems: AISystem[] = lemonDensity === LemonDensity.Low ? 
     data.ais.lowDensity : 
     lemonDensity === LemonDensity.Medium ? data.ais.mediumDensity : data.ais.highDensity;
@@ -224,7 +227,7 @@ export default function Home() {
             <div className="flex w-full h-fit mt-[-50] items-center justify-center gap-x-2">
               <h1 className="text-2xl font-semibold">Instructions</h1>
             </div>
-            <div className="max-h-[70vh] overflow-y-auto center items-center p-4 bg-gray-50 rounded-md">
+            <div className="center items-center p-4 bg-gray-50 rounded-md">
               <p className="mb-2">Thank you for participating in this experiment!</p>
               <p className="mb-2">
               The experiment will take approximately 20 minutes. You will be paid £1.5 for completing the experiment.
@@ -270,7 +273,7 @@ export default function Home() {
                 </TabsContent>
 
                 <TabsContent value="tutorial">
-                  <Tutorial userId={userId} disclosure={disclosure}></Tutorial>
+                  <Tutorial userId={userId} disclosure={disclosure} aiSystems={aiSystems} taskPermutations={taskPermutation} aiPermutations={tutorialAiPermutations} accuracies={tutorialAccuracies}></Tutorial>
                 </TabsContent>
 
                 <TabsContent value="comprehension">

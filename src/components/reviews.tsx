@@ -6,6 +6,7 @@ import { Task } from "@/types/task";
 
 
 const reviewTasks = data.deceptionDetection.instances;
+const reviewTutorialTasks = data.tutorial.deceptionDetection;
 
 interface ReviewProps {
     userId: string;
@@ -17,10 +18,11 @@ interface ReviewProps {
     aiSystems: AISystem[];
     updatePath: (userId: string, newInstance: number) => void;
     onComplete: () => void;
+    tutorial?: boolean;
 }
 
 export default function Reviews({ userId, disclosure, instancePermutation, aiPermutation, accuracies,
-    currentInstance, aiSystems, updatePath, onComplete }: ReviewProps) {
+    currentInstance, aiSystems, updatePath, onComplete, tutorial }: ReviewProps) {
     const reviewTerms = {
         positive: "Genuine",
         negative: "Deceptive",
@@ -42,7 +44,7 @@ export default function Reviews({ userId, disclosure, instancePermutation, aiPer
             userId={userId}
             domain="Deception detection"
             disclosure={disclosure}
-            tasks={reviewTasks}
+            tasks={tutorial ? reviewTutorialTasks : reviewTasks}
             instancePermutation={instancePermutation}
             aiPermutation={aiPermutation}
             accuracies={accuracies}

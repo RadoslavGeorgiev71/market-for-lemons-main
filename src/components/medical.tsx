@@ -7,6 +7,7 @@ import Image from "next/image";
 
 
 const medicalTasks = data.skinCancer.instances;
+const medicalTutorialTasks = data.tutorial.skinCancer;
 
 interface MedicalProps {
     userId: string;
@@ -18,10 +19,11 @@ interface MedicalProps {
     aiSystems: AISystem[];
     updatePath: (userId: string, newInstance: number) => void;
     onComplete: () => void;
+    tutorial?: boolean;
 }
 
 export default function Medical({ userId, disclosure, instancePermutation, aiPermutation, accuracies,
-     currentInstance, aiSystems, updatePath, onComplete }: MedicalProps) {
+     currentInstance, aiSystems, updatePath, onComplete, tutorial }: MedicalProps) {
     const medicalTerms = {
         positive: "Benign",
         negative: "Cancer",
@@ -35,7 +37,7 @@ export default function Medical({ userId, disclosure, instancePermutation, aiPer
             </h2>
 
             <Image 
-                src={`/images/cancer_images/${currentTask.values.file}`} 
+                src={`/images/${tutorial ? `cancer_tutorial_images/` : `cancer_images/`}${currentTask.values.file}`} 
                 alt="Photo" 
                 width={512} 
                 height={512} 
@@ -49,7 +51,7 @@ export default function Medical({ userId, disclosure, instancePermutation, aiPer
             userId={userId}
             domain="Skin cancer detection"
             disclosure={disclosure}
-            tasks={medicalTasks}
+            tasks={tutorial ? medicalTutorialTasks : medicalTasks}
             instancePermutation={instancePermutation}
             aiPermutation={aiPermutation}
             accuracies={accuracies}

@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { exitPath } from "@/data/constants";
+import { api } from "@/trpc/react";
 import { Disclosure } from "@/types/disclosure";
 import { State } from "@/types/state";
 import { useRouter } from "next/navigation";
@@ -22,12 +23,21 @@ export default function ComprehensionQuestions({disclosure, userId, updateState,
 
     const router = useRouter();
 
+    const deleteTasks = api.task.delete.useMutation();
+    const deleteSurveyResults = api.surveyResult.delete.useMutation();
+    const deleteHoveredSystems = api.hoveredAiSystem.delete.useMutation();
+
     const handleSubmit = () => {
         if (selectedAnswer1 === "2" &&
             selectedAnswer2 === "4" &&
             selectedAnswer3 === "2" &&
             selectedAnswer4 === "3"
         ) {
+            // clean up data from tutorial
+            deleteTasks.mutate({ userId: userId });
+            deleteSurveyResults.mutate({ userId: userId });
+            deleteHoveredSystems.mutate({ userId: userId });
+
             updateState.mutate({
                 userId: userId!,
                 state: State.task1,
