@@ -1,8 +1,7 @@
 import { Disclosure } from "@/types/disclosure";
 import { Button } from "../ui/button";
-import { Dialog, DialogDescription, DialogTrigger } from "../ui/dialog";
+import { Dialog, DialogTrigger } from "../ui/dialog";
 import { DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
 
 export default function DataInformation({disclosure}: {disclosure: Disclosure}) {

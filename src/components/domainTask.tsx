@@ -52,8 +52,8 @@ export default function DomainTask({
   taskTerms
 }: DomainTaskProps) {
   const [hoveredSystem, setHoveredSystem] = useState<string | null>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [hoverProgress, setHoverProgress] = useState(0); // 0 → 100 %
+  const [mousePos, setMousePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [hoverProgress, setHoverProgress] = useState<number>(0); // 0 → 100 %
   const hoverTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [selectedAnswer, setSelectedAnswer] = useState<DomainTaskProps["taskTerms"]["positive"] | DomainTaskProps["taskTerms"]["negative"] | null>(null);
@@ -171,7 +171,7 @@ export default function DomainTask({
 
   const { data: hoveredSystemsData, isLoading: isLoadingHoveredSystems } = api.hoveredAiSystem.getHoveredAiSystems.useQuery({ userId, domain });
 
-  const revealedSystems: String[] = hoveredSystemsData?.map((system) => String(system.aiSystemId)) ?? [];
+  const revealedSystems: string[] = hoveredSystemsData?.map((system) => String(system.aiSystemId)) ?? [];
 
   const createHoverAiSystem = api.hoveredAiSystem.create.useMutation(
     {
@@ -227,9 +227,17 @@ export default function DomainTask({
     const falseAnswer = taskTerms.positive === currentTask.truePrediction ? taskTerms.negative : taskTerms.positive;
 
     if (system.isLemon) {
-      rng < 15 ? setSystemAnswer(trueAnswer) : setSystemAnswer(falseAnswer);
+      if (rng < 15) {
+        setSystemAnswer(trueAnswer);
+      } else {
+        setSystemAnswer(falseAnswer);
+      }
     } else {
-      rng < 90 ? setSystemAnswer(trueAnswer) : setSystemAnswer(falseAnswer);
+      if (rng < 90) {
+        setSystemAnswer(trueAnswer);
+      } else {
+        setSystemAnswer(falseAnswer);
+      }
     }
   }
 

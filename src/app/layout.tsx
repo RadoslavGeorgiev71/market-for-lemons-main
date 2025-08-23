@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { TRPCReactProvider } from "@/trpc/react";
-import TaskInstructions from "@/components/layout/instructions";
-import RevokeConsent from "@/components/layout/revoke-consent";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

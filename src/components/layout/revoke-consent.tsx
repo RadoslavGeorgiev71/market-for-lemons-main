@@ -3,7 +3,6 @@ import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { State } from "@/types/state";
 
 
 
@@ -11,8 +10,6 @@ export default function RevokeConsent({userId, setRevokedConsent, handleBeforeUn
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const deleteUser = api.user.delete.useMutation();
-
-    const router = useRouter();
 
     return (
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

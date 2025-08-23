@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { CitrusIcon, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { api } from "@/trpc/react";
 import { v4 as uuidv4 } from "uuid";
 import { State } from "@/types/state";
@@ -215,7 +215,7 @@ export default function Home() {
           </p>
           <h2 className="text-xl max-w-3xl mb-2 mt-5">Your Rights</h2>
           <p className="mb-4">
-            By clicking  "Yes, I consent"  at the bottom of this page, you confirm that you have carefully read, understood, and consent to the above information.
+            By clicking  &quot;Yes, I consent&quot;  at the bottom of this page, you confirm that you have carefully read, understood, and consent to the above information.
           </p>
           <p className="mb-4">
             Note: You can exit the task at any time. This will imply revoking your consent, and subsequently, all your data will be discarded from our databases.

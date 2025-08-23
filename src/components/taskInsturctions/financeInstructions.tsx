@@ -12,7 +12,7 @@ export default function FinanceInstructions({userId, updateState}: {userId: stri
         <div className="center items-center p-4 bg-gray-50 rounded-md">
             <p>In this task you will be presented with a series of 10 loan applications.
                 Your goal is to evaluate each application and determine whether it should be accepted or rejected.
-                You can observe the applicant's details in the two examples below.
+                You can observe the applicant&apos;s details in the two examples below.
                 The first applicant should be accepted for the loan while the second one should be rejected.
                 Feel free to make any decision yourself or delegate it to an AI system.</p>
 

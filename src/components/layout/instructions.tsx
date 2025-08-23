@@ -1,5 +1,5 @@
 import { Button } from "../ui/button";
-import { Dialog, DialogDescription, DialogTrigger } from "../ui/dialog";
+import { Dialog, DialogTrigger } from "../ui/dialog";
 import { DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import Page1 from "../instructionPages/page1";
