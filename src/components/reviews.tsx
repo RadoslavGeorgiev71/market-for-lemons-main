@@ -42,7 +42,7 @@ export default function Reviews({ userId, disclosure, instancePermutation, aiPer
     return (
         <DomainTask
             userId={userId}
-            domain="Deception detection"
+            domain="Identifying deceptive hotel reviews"
             disclosure={disclosure}
             tasks={tutorial ? reviewTutorialTasks : reviewTasks}
             instancePermutation={instancePermutation}

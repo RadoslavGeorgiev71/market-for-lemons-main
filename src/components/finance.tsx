@@ -54,7 +54,7 @@ export default function Finance({ userId, disclosure, instancePermutation, aiPer
   return (
     <DomainTask
       userId={userId}
-      domain="Finance"
+      domain="Loan prediction"
       disclosure={disclosure}
       tasks={tutorial ? financeTutorialTasks : financeTasks}
       instancePermutation={instancePermutation}

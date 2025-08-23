@@ -98,7 +98,7 @@ export default function DomainTask({
 
   const nextTask = async () => {
     if (chosenOption === "Own Answer") {
-      createTask.mutate({
+      await createTask.mutateAsync({
         userId: userId,
         domain: domain,
         questionNum: currentInstance + 1,
@@ -108,7 +108,7 @@ export default function DomainTask({
         succeeded: selectedAnswer === currentTask.truePrediction,
       });
     } else {
-      createTask.mutate({
+      await createTask.mutateAsync({
         userId: userId,
         domain: domain,
         questionNum: currentInstance + 1,

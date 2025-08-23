@@ -13,9 +13,10 @@ interface tutorialProps {
     taskPermutations: number[];
     aiPermutations: number[][];
     accuracies: number[][];
+    unlockComprehension: () => void;
 }
 
-export default function Tutorial({ userId, disclosure, aiSystems, taskPermutations, aiPermutations, accuracies }: tutorialProps) {
+export default function Tutorial({ userId, disclosure, aiSystems, taskPermutations, aiPermutations, accuracies, unlockComprehension }: tutorialProps) {
     const [isCompleted, setIsCompleted] = useState(() => {
         return sessionStorage.getItem('isCompleted') === 'true' || false;
     });
@@ -51,6 +52,7 @@ export default function Tutorial({ userId, disclosure, aiSystems, taskPermutatio
     const onCompleteTask = () => {
         if (currentTask == 2) {
             setIsCompleted(true);
+            unlockComprehension();
         }
         setCurrentTask((prev) => (prev + 1));
         setCurrentInstance(0);

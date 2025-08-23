@@ -1,6 +1,5 @@
 import { Disclosure } from "@/types/disclosure";
 import Image from "next/image";
-import { useEffect, useRef } from "react";
 
 export default function Page1({disclosure}: {disclosure: Disclosure}) {
 

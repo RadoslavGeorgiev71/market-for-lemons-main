@@ -40,7 +40,7 @@ export default function ComprehensionQuestions({disclosure, userId, updateState,
 
             updateState.mutate({
                 userId: userId!,
-                state: State.task1,
+                state: State.preTask1,
             });
         } else {
             const trialsNum = sessionStorage.getItem("trialsNum");

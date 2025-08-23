@@ -49,7 +49,7 @@ export default function Medical({ userId, disclosure, instancePermutation, aiPer
     return (
         <DomainTask
             userId={userId}
-            domain="Skin cancer detection"
+            domain="Cancer prediction"
             disclosure={disclosure}
             tasks={tutorial ? medicalTutorialTasks : medicalTasks}
             instancePermutation={instancePermutation}

@@ -16,16 +16,19 @@ import data from "../data/data.json";
 import { AISystem } from "@/types/aiSystem";
 import Reviews from "@/components/reviews";
 import Medical from "@/components/medical";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { exitPath } from "@/data/constants";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Page1 from "./instructionPages/page1";
-import Page2 from "./instructionPages/page2";
-import Page3 from "./instructionPages/page3";
-import Page4 from "./instructionPages/page4";
-import Page5 from "./instructionPages/page5";
-import ComprehensionQuestions from "./instructionPages/comprehensionQuestions";
-import Tutorial from "./instructionPages/tutorial";
+import Page1 from "../components/instructionPages/page1";
+import Page2 from "../components/instructionPages/page2";
+import Page3 from "../components/instructionPages/page3";
+import Page4 from "../components/instructionPages/page4";
+import Page5 from "../components/instructionPages/page5";
+import ComprehensionQuestions from "../components/instructionPages/comprehensionQuestions";
+import Tutorial from "../components/instructionPages/tutorial";
+import FinanceInstructions from "@/components/taskInsturctions/financeInstructions";
+import ReviewInstructions from "@/components/taskInsturctions/reviewInstructions";
+import MedicalInstructions from "@/components/taskInsturctions/medicalInstructions";
 
 
 const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -100,13 +103,35 @@ export default function Home() {
     data.ais.lowDensity : 
     lemonDensity === LemonDensity.Medium ? data.ais.mediumDensity : data.ais.highDensity;
 
+  const [activeTab, setActiveTab] = useState<string>("page1");
+  const [unlockedTabs, setUnlockedTabs] = useState<string[]>(["page1", "page2"]);
+
+  const [currentTaskNum, setCurrentTaskNum] = useState<number>(1);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    // unlock the next tab only when current tab is visited
+    const order = ["page1", "page2", "page3", "page4", "page5", "tutorial"];
+    const currentIndex = order.indexOf(value);
+    const nextTab = order[currentIndex + 1];
+    if (nextTab && !unlockedTabs.includes(nextTab)) {
+      setUnlockedTabs([...unlockedTabs, nextTab]);
+    }
+  };
+
+  const isTabDisabled = (value: string) => !unlockedTabs.includes(value);
+
+  // 👇 This is the method Tutorial will call
+  const unlockComprehension = () => {
+    if (!unlockedTabs.includes("comprehension")) {
+      setUnlockedTabs([...unlockedTabs, "comprehension"]);
+    }
+    setActiveTab("comprehension"); // immediately open it
+  };
+
   if (!userId) {
     return (
       <div className="flex flex-col bg-background min-h-screen w-full items-center justify-center gap-6 p-24">
-        <div className="flex w-full h-fit mt-[-50] items-center justify-center gap-x-2">
-          <h1 className="text-2xl font-semibold">Market for</h1>
-          <CitrusIcon />
-        </div>
         <div className="md:h-[70vh] overflow-y-auto center items-center p-4 bg-gray-50 rounded-md">
           <h2 className="text-xl max-w-3xl mb-2">Informed Consent</h2>
           <p>
@@ -241,15 +266,15 @@ export default function Home() {
                 If you did not successfully answer all three comprehension questions after three trials,
                 you will not be allowed to participate in the experiment.</p>
 
-              <Tabs defaultValue="page1" className="">
+              <Tabs value={activeTab} onValueChange={handleTabChange} className="">
                 <TabsList className="flex mt-5 space-x-2">
-                  <TabsTrigger className="w-20" value="page1">Page 1</TabsTrigger>
-                  <TabsTrigger className="w-20" value="page2">Page 2</TabsTrigger>
-                  <TabsTrigger className="w-20" value="page3">Page 3</TabsTrigger>
-                  <TabsTrigger className="w-20" value="page4">Page 4</TabsTrigger>
-                  <TabsTrigger className="w-20" value="page5">Page 5</TabsTrigger>
-                  <TabsTrigger value="tutorial">Tutorial</TabsTrigger>
-                  <TabsTrigger value="comprehension">Comprehension Questions</TabsTrigger>
+                  <TabsTrigger className="w-20" value="page1" disabled={isTabDisabled("page1")}>Page 1</TabsTrigger>
+                  <TabsTrigger className="w-20" value="page2" disabled={isTabDisabled("page2")}>Page 2</TabsTrigger>
+                  <TabsTrigger className="w-20" value="page3" disabled={isTabDisabled("page3")}>Page 3</TabsTrigger>
+                  <TabsTrigger className="w-20" value="page4" disabled={isTabDisabled("page4")}>Page 4</TabsTrigger>
+                  <TabsTrigger className="w-20" value="page5" disabled={isTabDisabled("page5")}>Page 5</TabsTrigger>
+                  <TabsTrigger value="tutorial" disabled={isTabDisabled("tutorial")}>Tutorial</TabsTrigger>
+                  <TabsTrigger value="comprehension" disabled={isTabDisabled("comprehension")}>Comprehension Questions</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="page1">
@@ -273,7 +298,7 @@ export default function Home() {
                 </TabsContent>
 
                 <TabsContent value="tutorial">
-                  <Tutorial userId={userId} disclosure={disclosure} aiSystems={aiSystems} taskPermutations={taskPermutation} aiPermutations={tutorialAiPermutations} accuracies={tutorialAccuracies}></Tutorial>
+                  <Tutorial userId={userId} disclosure={disclosure} aiSystems={aiSystems} taskPermutations={taskPermutation} aiPermutations={tutorialAiPermutations} accuracies={tutorialAccuracies} unlockComprehension={unlockComprehension}></Tutorial>
                 </TabsContent>
 
                 <TabsContent value="comprehension">
@@ -283,48 +308,24 @@ export default function Home() {
             </div>
           </>
         );
-      case State.preTask:
-        return (
-          <div className="flex flex-col items-center gap-6">
-            <h1 className="text-2xl font-semibold">Pre-Task</h1>
-            <Button onClick={() => {
-              updateState.mutate({
-                userId: userId!,
-                state: State.tutorial,
-              });
-            }} disabled={updateState.isPending}>
-              {updateState.isPending && <Loader2 className="animate-spin" />}
-              Proceed to Tutorial
-            </Button>
-          </div>
-        );
-      case State.tutorial:
-        return (
-          <div className="flex flex-col items-center gap-6">
-            <h1 className="text-2xl font-semibold">Tutorial</h1>
-            <Button onClick={() => {
-              updateState.mutate({
-                userId: userId!,
-                state: State.task1,
-              });
-            }} disabled={updateState.isPending}>
-              {updateState.isPending && <Loader2 className="animate-spin" />}
-              Start your first task
-            </Button>
-          </div>
-        );
-      case State.task1:
-        return renderTask(1);
-      case State.postTask1:
-        return renderPostTask(1);
-      case State.task2:
-        return renderTask(2);
-      case State.postTask2:
-        return renderPostTask(2);
-      case State.task3:
-        return renderTask(3);
-      case State.postTask3:
-        return renderPostTask(3);
+      case State.preTask1:
+        return renderPreTask(1);
+      case State.preTask2:
+        return renderPreTask(2);
+      case State.preTask3:
+        return renderPreTask(3);
+      case State.finance:
+        return <Finance userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
+       aiPermutation={aiPermutations[currentTaskNum]} accuracies={accuracies[currentTaskNum]}
+       currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
+      case State.reviews:
+        return <Reviews userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
+       aiPermutation={aiPermutations[currentTaskNum]} accuracies={accuracies[currentTaskNum]}
+       currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
+      case State.medical:
+        return <Medical userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
+       aiPermutation={aiPermutations[currentTaskNum]} accuracies={accuracies[currentTaskNum]}
+       currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
       case State.postTask:
         return (
           <div className="flex flex-col items-center gap-6">
@@ -359,26 +360,29 @@ export default function Home() {
   };
 
   const onTaskCompletion = () => {
-    if (state === State.task1) {
-      updateState.mutate({
-        userId: userId!,
-        state: State.postTask1,
-      });
-    } else if (state === State.task2) {
-      updateState.mutate({
-        userId: userId!,
-        state: State.postTask2,
-      });
+    if (currentTaskNum === 3) {
+
     } else {
+      setCurrentTaskNum(currentTaskNum + 1);
       updateState.mutate({
         userId: userId!,
-        state: State.postTask3,
+        state: State[`preTask${currentTaskNum}` as keyof typeof State],
       });
     }
 
     // reset the current instance
     updatePath(userId!, 0);
   };
+
+  const renderPreTask = (taskNumber: number) => {
+    if (taskPermutation[taskNumber] === 1) {
+      return <FinanceInstructions userId={userId!} updateState={updateState}/>;
+    } else if (taskPermutation[taskNumber] === 2) {
+      return <ReviewInstructions userId={userId!} updateState={updateState}/>;
+    } else {
+      return <MedicalInstructions userId={userId!} updateState={updateState}/>;
+    }
+  }
 
   const renderTask = (taskNumber: number) => {
     if (taskPermutation[taskNumber] === 1) {
@@ -394,24 +398,6 @@ export default function Home() {
        aiPermutation={aiPermutations[taskNumber]} accuracies={accuracies[taskNumber]}
        currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
     }
-  };
-
-  const renderPostTask = (taskNumber: number) => {
-
-    return (
-      <div className="flex flex-col items-center gap-6">
-        <h1 className="text-2xl font-semibold">You have successfully completed Task {taskNumber}!</h1>
-        <Button onClick={() => {
-          updateState.mutate({
-            userId: userId!,
-            state: State[`task${taskNumber + 1}` as keyof typeof State],
-          });
-        }} disabled={updateState.isPending}>
-          {updateState.isPending && <Loader2 className="animate-spin" />}
-          Proceed to {taskNumber == 3 ? "end of study" : `Task ${taskNumber + 1}`}
-        </Button>
-      </div>
-    );
   };
 
   return (
