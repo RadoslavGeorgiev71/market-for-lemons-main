@@ -2,8 +2,9 @@ import { Disclosure } from "@/types/disclosure";
 
 import data from "../data/data.json";
 import { AISystem } from "@/types/aiSystem";
-import DomainTask from "./domainTask";
+
 import { Task } from "@/types/task";
+import DomainTask from "./doomainTask";
 
 
 const financeTasks = data.loanPrediction.instances;
