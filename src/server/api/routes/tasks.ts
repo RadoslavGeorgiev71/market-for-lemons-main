@@ -9,9 +9,9 @@ export const taskRouter = createTRPCRouter({
       const { ctx, input } = opts;
 
       const [newTask] = await ctx.sql`
-        INSERT INTO tasks (user_id, domain, question_num, task_id, used_ai, ai_system_id, succeeded) 
-        VALUES (${input.userId}, ${input.domain}, ${input.questionNum}, ${input.taskId}, ${input.usedAI}, ${input.systemId}, ${input.succeeded}) 
-        RETURNING user_id AS "userId", domain AS "domain", question_num AS "questionNum", task_id AS "taskId", used_ai AS "usedAI", ai_system_id AS "systemId", succeeded AS "succeeded"
+        INSERT INTO tasks (user_id, domain, question_num, task_id, used_ai, ai_system_id, succeeded, time_spent) 
+        VALUES (${input.userId}, ${input.domain}, ${input.questionNum}, ${input.taskId}, ${input.usedAI}, ${input.systemId}, ${input.succeeded}, ${input.timeSpent}) 
+        RETURNING user_id AS "userId", domain AS "domain", question_num AS "questionNum", task_id AS "taskId", used_ai AS "usedAI", ai_system_id AS "systemId", succeeded AS "succeeded", time_spent AS "timeSpent"
       `;
 
       return newTask;
@@ -33,4 +33,32 @@ export const taskRouter = createTRPCRouter({
       return tasks as unknown as Task[];
     }
   ),
+
+  delete: publicProcedure
+    .input(
+      z.object({
+        userId: z.string()
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const sql = ctx.sql;
+      await sql`
+        DELETE FROM tasks WHERE user_id = ${input.userId}
+      `;
+    }),
+
+  countSuccessfulTasks: publicProcedure
+    .input(
+      z.object({
+        userId: z.string()
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const sql = ctx.sql;
+      const [count] = await sql`
+        SELECT COUNT(*) FROM tasks WHERE user_id = ${input.userId} AND succeeded = true
+      `;
+      if (!count) return 0;
+      return count.count as number;
+    })
 });

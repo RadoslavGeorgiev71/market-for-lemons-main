@@ -1,51 +1,49 @@
-"use client";
-
 import { api } from "@/trpc/react";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
-import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { State } from "@/types/state";
 
-export default function RevokeConsent() {
+
+
+export default function RevokeConsent({userId, setRevokedConsent, handleBeforeUnload}: {userId: string; setRevokedConsent: (value: boolean) => void; handleBeforeUnload: (event: BeforeUnloadEvent) => void}) {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    const searchParams = useSearchParams();
-    const userId = searchParams?.get("user_id");
-    const utils = api.useUtils();
-    const deleteUser = api.user.delete.useMutation({
-        onSuccess: async () => {
-            await utils.user.getUserById.invalidate({ userId: userId ?? "" });
-        },
-    });
+    const deleteUser = api.user.delete.useMutation();
 
-  return (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogTrigger asChild>
-            <Button variant="destructive">
-                Revoke Consent
-            </Button>
-        </DialogTrigger>
-        <DialogContent>
-            <DialogHeader>
-                <DialogTitle>Revoke Consent</DialogTitle>
-            </DialogHeader>
-            <DialogDescription>
-                Are you sure you want to revoke your consent? This will delete all your data and you will not be able to participate in the study anymore.
-            </DialogDescription>
-            <DialogFooter>
-                <Button 
-                    variant="destructive"
-                    onClick={() => {
-                        if (!userId) return;
-                        //TODO: To redirect back
-                        deleteUser.mutate({ userId: userId });
-                        setIsDialogOpen(false);
-                    }}
-                >
-                    Confirm
+    const router = useRouter();
+
+    return (
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+                <Button variant="destructive">
+                    Revoke Consent
                 </Button>
-            </DialogFooter>
-        </DialogContent>
-    </Dialog>
-  );
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Revoke Consent</DialogTitle>
+                </DialogHeader>
+                <DialogDescription>
+                    Are you sure you want to revoke your consent? This will delete all your data and you will not be able to participate in the study anymore.
+                </DialogDescription>
+                <DialogFooter>
+                    <Button 
+                        variant="destructive"
+                        onClick={async () => {
+                            if (!userId) return;
+                            //TODO: To redirect back
+                            await deleteUser.mutateAsync({ userId: userId });
+                            setIsDialogOpen(false);
+                            window.removeEventListener("beforeunload", handleBeforeUnload);
+                            setRevokedConsent(true);
+                        }}
+                    >
+                        Confirm
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
 }

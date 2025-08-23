@@ -21,6 +21,8 @@ interface DomainTaskProps {
   domain: string;
   disclosure: Disclosure;
   instancePermutation: number[];
+  aiPermutation: number[];
+  accuracies: number[];
   currentInstance: number;
   tasks: Task[];
   aiSystems: AISystem[];
@@ -30,6 +32,7 @@ interface DomainTaskProps {
   taskTerms: {
     positive: string;
     negative: string;
+    question: string;
   }
 }
 
@@ -40,6 +43,8 @@ export default function DomainTask({
   tasks,
   aiSystems,
   instancePermutation,
+  aiPermutation,
+  accuracies,
   currentInstance,
   updatePath,
   onComplete,
@@ -54,6 +59,7 @@ export default function DomainTask({
   const [selectedAnswer, setSelectedAnswer] = useState<DomainTaskProps["taskTerms"]["positive"] | DomainTaskProps["taskTerms"]["negative"] | null>(null);
   const [selectedSystem, setSelectedSystem] = useState<AISystem | null>(null);
   const [selectedSystemIndex, setSelectedSystemIndex] = useState<number | null>(null);
+  const [systemAnswer, setSystemAnswer] = useState<string | null>(null);
   const [chosenOption, setChosenOption] = useState<"Own Answer" |"AI answer" | null>(null);
 
   const [showResult, setShowResult] = useState(false);
@@ -61,6 +67,15 @@ export default function DomainTask({
   const [showSurvey, setShowSurvey] = useState(false);
   const [selectedLemonNumber, setSelectedLemonNumber] = useState<number | null>(null);
   const [selectedTrust, setSelectedTrust] = useState<number | null>(null);
+
+  const [startTime, setStartTime] = useState<number | null>(null);
+
+
+  // Start timer when the page is opened
+  useEffect(() => {
+    setStartTime(Date.now());
+    utils.hoveredAiSystem.getHoveredAiSystems.invalidate({ userId, domain });
+  }, []);
 
 
   // API mutations
@@ -76,7 +91,7 @@ export default function DomainTask({
   const currentTask = tasks[instancePermutation[currentInstance]];
 
   const handleAiSystemSelect = async (system: AISystem, index: number) => {
-    if (revealedSystems.includes(system.id)) {
+    if (revealedSystems.includes(system.id) || disclosure == Disclosure.none) {
       setSelectedSystem(system);
       setSelectedSystemIndex(index);
     }
@@ -85,16 +100,17 @@ export default function DomainTask({
   const submitAnswer = async () => {
     if (currentInstance == 3 || currentInstance == 8) {
       setShowSurvey(true);
-    } else if (currentInstance == 9) {
-      onComplete?.();
     } else {
       nextTask();
     }
   };
 
   const nextTask = async () => {
+    const elapsedMs = Date.now() - startTime!;
+    const elapsedSeconds = Math.floor(elapsedMs / 1000);
+
     if (chosenOption === "Own Answer") {
-      createTask.mutate({
+      await createTask.mutateAsync({
         userId: userId,
         domain: domain,
         questionNum: currentInstance + 1,
@@ -102,16 +118,18 @@ export default function DomainTask({
         usedAI: false,
         systemId: "",
         succeeded: selectedAnswer === currentTask.truePrediction,
+        timeSpent: elapsedSeconds,
       });
     } else {
-      createTask.mutate({
+      await createTask.mutateAsync({
         userId: userId,
         domain: domain,
         questionNum: currentInstance + 1,
         taskId: currentTask.id,
         usedAI: true,
         systemId: selectedSystem!.id,
-        succeeded: selectedSystem!.isLemon,
+        succeeded: systemAnswer === currentTask.truePrediction,
+        timeSpent: elapsedSeconds,
       });
 
       if (!revealedSystems.includes(selectedSystem!.id)) {
@@ -123,6 +141,13 @@ export default function DomainTask({
 
     setSelectedAnswer(null);
     setSelectedSystem(null);
+
+    setStartTime(Date.now());
+
+    if (currentInstance == tasks.length - 1) {
+      utils.hoveredAiSystem.getHoveredAiSystems.invalidate({ userId, domain });
+      onComplete?.();
+    }
   };
 
 
@@ -144,16 +169,15 @@ export default function DomainTask({
     nextTask();
   };
 
+  const { data: hoveredSystemsData, isLoading: isLoadingHoveredSystems } = api.hoveredAiSystem.getHoveredAiSystems.useQuery({ userId, domain });
 
-
-  const revealedSystems: String[] = api.hoveredAiSystem.getHoveredAiSystems
-    .useQuery({ userId, domain }).data?.map((system) => String(system.aiSystemId)) || [];
+  const revealedSystems: String[] = hoveredSystemsData?.map((system) => String(system.aiSystemId)) ?? [];
 
   const createHoverAiSystem = api.hoveredAiSystem.create.useMutation(
     {
       onSuccess: () => {
         // Invalidate hovered systems query to update list
-        utils.hoveredAiSystem.getHoveredAiSystems.invalidate({ userId });
+        utils.hoveredAiSystem.getHoveredAiSystems.invalidate({ userId, domain });
       },
     }
   );
@@ -161,6 +185,7 @@ export default function DomainTask({
   const HOVER_TIME = 1000; // ms until reveal
 
   const handleMouseEnter = (system: AISystem) => {
+    if (disclosure == Disclosure.none) return; // no hover when there is no disclosure
     if (revealedSystems.includes(system.id)) return; // already revealed
 
     setHoveredSystem(system.id);
@@ -194,9 +219,23 @@ export default function DomainTask({
     return () => clearInterval(hoverTimer.current!); // cleanup
   }, []);
 
+
+
+  const getAIResponse = (system: AISystem) => {
+    const rng = Math.random() * 100;
+    const trueAnswer = taskTerms.positive === currentTask.truePrediction ? taskTerms.positive : taskTerms.negative;
+    const falseAnswer = taskTerms.positive === currentTask.truePrediction ? taskTerms.negative : taskTerms.positive;
+
+    if (system.isLemon) {
+      rng < 15 ? setSystemAnswer(trueAnswer) : setSystemAnswer(falseAnswer);
+    } else {
+      rng < 90 ? setSystemAnswer(trueAnswer) : setSystemAnswer(falseAnswer);
+    }
+  }
+
   
 
-  if (createTask.isPending) {
+  if (createTask.isPending || isLoadingHoveredSystems) {
     return <Loading />;
   }
 
@@ -215,36 +254,39 @@ export default function DomainTask({
               Your decision
             </h2>
             <h3 className="m-2 text-center">
-              Considering the applicant's details on the left, do you decide to accept or reject this loan request?
+              {taskTerms.question}
             </h3>
             <div className="flex flex-row items-center justify-between space-x-10 min-w-[30%] m-2">
-              <div className="flex items-center space-x-2">
+              <label className="flex items-center space-x-2 cursor-pointer">
                 <input
                   type="radio"
                   name="choice"
                   value={taskTerms.positive}
                   checked={selectedAnswer === taskTerms.positive}
                   onChange={(e) => setSelectedAnswer(e.target.value)}
+                  className="cursor-pointer"
                 />
-                <p className="text-xl">{taskTerms.positive}</p>
-              </div>
+                <span className="text-xl">{taskTerms.positive}</span>
+              </label>
 
-              <div className="flex items-center space-x-2">
+              <label className="flex items-center space-x-2 cursor-pointer">
                 <input
                   type="radio"
                   name="choice"
                   value={taskTerms.negative}
                   checked={selectedAnswer === taskTerms.negative}
                   onChange={(e) => setSelectedAnswer(e.target.value)}
+                  className="cursor-pointer"
                 />
-                <p className="text-xl">{taskTerms.negative}</p>
-              </div>
+                <span className="text-xl">{taskTerms.negative}</span>
+              </label>
             </div>
             <div className="flex flex-row items-center justify-between space-x-5 m-3">
               {selectedSystem !== null && (
                 <Button className="w-45"
                   onClick={() => {
                     setChosenOption("AI answer");
+                    getAIResponse(selectedSystem!);
                     setShowResult(true);
                   }}>Delegate decision to AI</Button>
               )}
@@ -262,7 +304,7 @@ export default function DomainTask({
             <h2 className="text-xl max-w-3xl mb-4 mt-5 text-center flex-1">AI pool</h2>
             <div className="grid grid-cols-5 gap-4 p-2 border-2 rounded-lg border-gray-50 min-w-175">
               {/* Display AI Systems in instance order */}
-              {instancePermutation.map(i => aiSystems[i]).map((system, index) => {
+              {aiPermutation.map(i => aiSystems[i]).map((system, index) => {
                 const isRevealed = revealedSystems.includes(system.id);
                 const isHovered = hoveredSystem === system.id;
 
@@ -319,7 +361,7 @@ export default function DomainTask({
                         
                         {isRevealed && <div className="text-center text-xs min-w-30 mt-2 text-muted-foreground">
                           {disclosure !== Disclosure.none && (
-                            <p>Accuracy: {system.accuracy}%</p>
+                            <p>Accuracy: {system.accuracy + accuracies[index]}%</p>
                           )}
                           {disclosure === Disclosure.full && (
                             <p>Data Quality: {system.dataQuality}</p>
@@ -368,7 +410,7 @@ export default function DomainTask({
                         
                         <div className="text-center text-xs min-w-30 mt-2 text-muted-foreground">
                           {disclosure !== Disclosure.none && (
-                            <p>Accuracy: {selectedSystem!.accuracy}%</p>
+                            <p>Accuracy: {selectedSystem!.accuracy + accuracies[selectedSystemIndex!]}%</p>
                           )}
                           {disclosure === Disclosure.full && (
                             <p>Data Quality: {selectedSystem!.dataQuality}</p>
@@ -376,10 +418,8 @@ export default function DomainTask({
                         </div>
                     </div>
                     <h2 className="text-xl max-w-3xl">
-                      AI answer: {selectedSystem!.isLemon ? 
-                        (currentTask.truePrediction === taskTerms.positive ? taskTerms.negative : taskTerms.positive) : 
-                        currentTask.truePrediction}
-                      </h2>
+                      AI answer: {systemAnswer}
+                    </h2>
                   </div>
                 )}
 

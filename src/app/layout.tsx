@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { TRPCReactProvider } from "@/trpc/react";
-import TaskInstructions from "@/components/layout/task-instructions";
+import TaskInstructions from "@/components/layout/instructions";
 import RevokeConsent from "@/components/layout/revoke-consent";
 
 const geistSans = Geist({
@@ -31,11 +31,6 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <TRPCReactProvider>
-          {/* Absolute top left and top right task instructions and revoke consent button */}
-          <div className="absolute top-0 left-0 right-0 flex justify-between items-center p-4">
-            <TaskInstructions />
-            <RevokeConsent />
-          </div>
           {children}
         </TRPCReactProvider>
       </body>

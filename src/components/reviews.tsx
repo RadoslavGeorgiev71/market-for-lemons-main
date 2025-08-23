@@ -6,21 +6,27 @@ import { Task } from "@/types/task";
 
 
 const reviewTasks = data.deceptionDetection.instances;
+const reviewTutorialTasks = data.tutorial.deceptionDetection;
 
 interface ReviewProps {
     userId: string;
     disclosure: Disclosure;
     instancePermutation: number[];
+    aiPermutation: number[];
+    accuracies: number[];
     currentInstance: number;
     aiSystems: AISystem[];
     updatePath: (userId: string, newInstance: number) => void;
     onComplete: () => void;
+    tutorial?: boolean;
 }
 
-export default function Reviews({ userId, disclosure, instancePermutation, currentInstance, aiSystems, updatePath, onComplete }: ReviewProps) {
+export default function Reviews({ userId, disclosure, instancePermutation, aiPermutation, accuracies,
+    currentInstance, aiSystems, updatePath, onComplete, tutorial }: ReviewProps) {
     const reviewTerms = {
         positive: "Genuine",
-        negative: "Deceptive"
+        negative: "Deceptive",
+        question: "Considering the hotel review on the left, is it genuine or deceptive?"
     }
 
     const reviewTaskInfoComponent = (currentTask: Task) => (
@@ -36,10 +42,12 @@ export default function Reviews({ userId, disclosure, instancePermutation, curre
     return (
         <DomainTask
             userId={userId}
-            domain="Deception detection"
+            domain="Identifying deceptive hotel reviews"
             disclosure={disclosure}
-            tasks={reviewTasks}
+            tasks={tutorial ? reviewTutorialTasks : reviewTasks}
             instancePermutation={instancePermutation}
+            aiPermutation={aiPermutation}
+            accuracies={accuracies}
             currentInstance={currentInstance}
             aiSystems={aiSystems}
             updatePath={updatePath}

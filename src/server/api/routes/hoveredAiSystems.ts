@@ -18,6 +18,21 @@ export const hoveredAiSystemRouter = createTRPCRouter({
             return newHoveredAiSystem
         }),
 
+    delete: publicProcedure
+        .input(
+              z.object({
+                userId: z.string(),
+              })
+            )
+        .mutation(async (opts) => {
+            const { ctx, input } = opts;
+
+            await ctx.sql`
+                DELETE FROM hovered_ai_systems
+                WHERE user_id = ${input.userId}
+            `;
+        }),
+
     getHoveredAiSystems: publicProcedure
         .input(z.object({
             userId: z.string(),

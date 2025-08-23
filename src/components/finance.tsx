@@ -1,4 +1,3 @@
-
 import { Disclosure } from "@/types/disclosure";
 
 import data from "../data/data.json";
@@ -8,21 +7,27 @@ import { Task } from "@/types/task";
 
 
 const financeTasks = data.loanPrediction.instances;
+const financeTutorialTasks = data.tutorial.loanPrediction;
 
 interface FinanceProps{
   userId: string;
   disclosure: Disclosure;
   instancePermutation: number[];
+  aiPermutation: number[];
+  accuracies: number[];
   currentInstance: number;
   aiSystems: AISystem[];
   updatePath: (userId: string, newInstance: number) => void;
   onComplete: () => void;
+  tutorial?: boolean;
 }
 
-export default function Finance({ userId, disclosure, instancePermutation, currentInstance, aiSystems, updatePath, onComplete }: FinanceProps) {
+export default function Finance({ userId, disclosure, instancePermutation, aiPermutation, accuracies,
+   currentInstance, aiSystems, updatePath, onComplete, tutorial }: FinanceProps) {
   const financeTerms = {
     positive: "Accept",
-    negative: "Reject"
+    negative: "Reject",
+    question: "Considering the applicant's details on the left, do you decide to accept or reject this loan request?"
   }
 
   const financeTaskInfoComponent = (currentTask: Task) => (
@@ -49,10 +54,12 @@ export default function Finance({ userId, disclosure, instancePermutation, curre
   return (
     <DomainTask
       userId={userId}
-      domain="Finance"
+      domain="Loan prediction"
       disclosure={disclosure}
-      tasks={financeTasks}
+      tasks={tutorial ? financeTutorialTasks : financeTasks}
       instancePermutation={instancePermutation}
+      aiPermutation={aiPermutation}
+      accuracies={accuracies}
       currentInstance={currentInstance}
       aiSystems={aiSystems}
       updatePath={updatePath}

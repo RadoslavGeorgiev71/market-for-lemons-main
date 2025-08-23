@@ -31,7 +31,7 @@ export const userRouter = createTRPCRouter({
       return newUser as User;
     }),
   getUserCount: publicProcedure
-    .query(async ({ ctx }) => {
+    .mutation(async ({ ctx }) => {
       const sql = ctx.sql;
       const [count] =
         await sql`SELECT COUNT(*) AS count FROM users`;
