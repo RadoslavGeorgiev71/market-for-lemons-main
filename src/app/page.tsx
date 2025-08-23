@@ -63,7 +63,6 @@ export default function Home() {
   const createCompletion = api.completion.create.useMutation({
     onSuccess: async () => {
       await utils.completion.getByUserId.invalidate({ userId: userId ?? "" });
-      await utils.task.countSuccessfulTasks.invalidate({ userId: userId ?? "" });
     },
   });
 
@@ -348,6 +347,8 @@ export default function Home() {
   };
 
   const onTaskCompletion = async () => {
+    await utils.task.countSuccessfulTasks.invalidate({ userId: userId ?? "" });
+
     if (currentTaskNum === 2) {
       updateState.mutate({
         userId: userId!,
