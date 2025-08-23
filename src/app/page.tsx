@@ -58,7 +58,6 @@ export default function Home() {
   const state = getUser.data?.state;
 
   const completion = api.completion.getByUserId.useQuery({ userId: userId! }, { enabled: !!userId });
-  const countSuccessfulTasks = api.task.countSuccessfulTasks.useQuery({ userId: userId! }, { enabled: !!userId });
 
   const createCompletion = api.completion.create.useMutation({
     onSuccess: async () => {
@@ -347,15 +346,15 @@ export default function Home() {
   };
 
   const onTaskCompletion = async () => {
-    await utils.task.countSuccessfulTasks.invalidate({ userId: userId ?? "" });
-
     if (currentTaskNum === 2) {
+      const freshCount = await utils.task.countSuccessfulTasks.fetch({ userId: userId ?? "" });
+
       updateState.mutate({
         userId: userId!,
         state: State.completion,
       });
 
-      await createCompletion.mutateAsync({ userId: userId!, coins: countSuccessfulTasks.data! * 30 });
+      await createCompletion.mutateAsync({ userId: userId!, coins: freshCount * 30 });
     } else {
       updateState.mutate({
         userId: userId!,

@@ -137,8 +137,6 @@ export default function DomainTask({
       }
     }
 
-    updatePath(userId, currentInstance + 1);
-
     setSelectedAnswer(null);
     setSelectedSystem(null);
 
@@ -147,6 +145,8 @@ export default function DomainTask({
     if (currentInstance == tasks.length - 1) {
       utils.hoveredAiSystem.getHoveredAiSystems.invalidate({ userId, domain });
       onComplete?.();
+    } else {
+      updatePath(userId, currentInstance + 1);
     }
   };
 
