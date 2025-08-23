@@ -46,4 +46,19 @@ export const taskRouter = createTRPCRouter({
         DELETE FROM tasks WHERE user_id = ${input.userId}
       `;
     }),
+
+  countSuccessfulTasks: publicProcedure
+    .input(
+      z.object({
+        userId: z.string()
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const sql = ctx.sql;
+      const [count] = await sql`
+        SELECT COUNT(*) FROM tasks WHERE user_id = ${input.userId} AND succeeded = true
+      `;
+      if (!count) return 0;
+      return count.count as number;
+    })
 });

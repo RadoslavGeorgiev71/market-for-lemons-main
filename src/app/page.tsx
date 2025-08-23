@@ -29,9 +29,9 @@ import Tutorial from "../components/instructionPages/tutorial";
 import FinanceInstructions from "@/components/taskInsturctions/financeInstructions";
 import ReviewInstructions from "@/components/taskInsturctions/reviewInstructions";
 import MedicalInstructions from "@/components/taskInsturctions/medicalInstructions";
-import TaskInstructions from "@/components/layout/task-instructions";
 import RevokeConsent from "@/components/layout/revoke-consent";
 import DataInformation from "@/components/layout/dataInformation";
+import Instructions from "@/components/layout/instructions";
 
 
 const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -57,7 +57,15 @@ export default function Home() {
   const getUserCount = api.user.getUserCount.useMutation();
   const state = getUser.data?.state;
 
+  const completion = api.completion.getByUserId.useQuery({ userId: userId! }, { enabled: !!userId });
+  const countSuccessfulTasks = api.task.countSuccessfulTasks.useQuery({ userId: userId! }, { enabled: !!userId });
 
+  const createCompletion = api.completion.create.useMutation({
+    onSuccess: async () => {
+      await utils.completion.getByUserId.invalidate({ userId: userId ?? "" });
+      await utils.task.countSuccessfulTasks.invalidate({ userId: userId ?? "" });
+    },
+  });
 
   const ignoreBeforeUnload = useRef(false);
 
@@ -330,6 +338,7 @@ export default function Home() {
         return (
           <div className="flex flex-col items-center">
             <h1 className="text-2xl font-semibold">Thank you for participating!</h1>
+            <p>You have earned <strong>{completion.data?.coins} coins.</strong></p>
             <p>You have completed all of the study. You can safely close this tab.</p>
           </div>
         );
@@ -338,12 +347,14 @@ export default function Home() {
     }
   };
 
-  const onTaskCompletion = () => {
+  const onTaskCompletion = async () => {
     if (currentTaskNum === 2) {
       updateState.mutate({
         userId: userId!,
         state: State.completion,
       });
+
+      await createCompletion.mutateAsync({ userId: userId!, coins: countSuccessfulTasks.data! * 30 });
     } else {
       updateState.mutate({
         userId: userId!,
@@ -404,7 +415,7 @@ export default function Home() {
         <div>
           {(state === State.finance || state === State.reviews || state === State.medical) && (
               <div className="flex flex-col gap-6">
-                <TaskInstructions disclosure={disclosure} taskPermutation={taskPermutation} />
+                <Instructions disclosure={disclosure} taskPermutation={taskPermutation} />
                 <DataInformation disclosure={disclosure} />
               </div>
             )}

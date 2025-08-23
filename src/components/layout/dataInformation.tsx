@@ -19,7 +19,6 @@ export default function DataInformation({disclosure}: {disclosure: Disclosure}) 
                     Data information
                 </DialogTitle>
             </DialogHeader>
-            <DialogDescription className="flex items-center gap-2 justify-center">
                 {disclosure === Disclosure.none && (
                     <div>
                         <p>High-Quality AI System: Correct Predictions: 90%</p>
@@ -46,8 +45,7 @@ export default function DataInformation({disclosure}: {disclosure: Disclosure}) 
                         <p className="ml-35">Accuracy: High (2/3); Low (1/3)</p>
                         <p className="ml-35"> Data Quality: Low</p>
                     </div>
-                )}
-            </DialogDescription>        
+                )}        
         </DialogContent>
     </Dialog>
     )

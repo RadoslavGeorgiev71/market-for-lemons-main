@@ -59,6 +59,7 @@ export default function DomainTask({
   const [selectedAnswer, setSelectedAnswer] = useState<DomainTaskProps["taskTerms"]["positive"] | DomainTaskProps["taskTerms"]["negative"] | null>(null);
   const [selectedSystem, setSelectedSystem] = useState<AISystem | null>(null);
   const [selectedSystemIndex, setSelectedSystemIndex] = useState<number | null>(null);
+  const [systemAnswer, setSystemAnswer] = useState<string | null>(null);
   const [chosenOption, setChosenOption] = useState<"Own Answer" |"AI answer" | null>(null);
 
   const [showResult, setShowResult] = useState(false);
@@ -127,7 +128,7 @@ export default function DomainTask({
         taskId: currentTask.id,
         usedAI: true,
         systemId: selectedSystem!.id,
-        succeeded: selectedSystem!.isLemon,
+        succeeded: systemAnswer === currentTask.truePrediction,
         timeSpent: elapsedSeconds,
       });
 
@@ -220,12 +221,15 @@ export default function DomainTask({
 
 
 
-  const getAIResponse = (system: AISystem): string => {
+  const getAIResponse = (system: AISystem) => {
     const rng = Math.random() * 100;
+    const trueAnswer = taskTerms.positive === currentTask.truePrediction ? taskTerms.positive : taskTerms.negative;
+    const falseAnswer = taskTerms.positive === currentTask.truePrediction ? taskTerms.negative : taskTerms.positive;
+
     if (system.isLemon) {
-      return rng < 15 ? taskTerms.positive : taskTerms.negative;
+      rng < 15 ? setSystemAnswer(trueAnswer) : setSystemAnswer(falseAnswer);
     } else {
-      return rng < 90 ? taskTerms.positive : taskTerms.negative;
+      rng < 90 ? setSystemAnswer(trueAnswer) : setSystemAnswer(falseAnswer);
     }
   }
 
@@ -282,6 +286,7 @@ export default function DomainTask({
                 <Button className="w-45"
                   onClick={() => {
                     setChosenOption("AI answer");
+                    getAIResponse(selectedSystem!);
                     setShowResult(true);
                   }}>Delegate decision to AI</Button>
               )}
@@ -413,7 +418,7 @@ export default function DomainTask({
                         </div>
                     </div>
                     <h2 className="text-xl max-w-3xl">
-                      AI answer: {getAIResponse(selectedSystem!)}
+                      AI answer: {systemAnswer}
                     </h2>
                   </div>
                 )}
