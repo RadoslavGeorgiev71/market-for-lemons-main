@@ -1,23 +1,16 @@
-"use client";
-
 import { api } from "@/trpc/react";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { exitPath } from "@/data/constants";
+import { State } from "@/types/state";
 
-export default function RevokeConsent() {
+
+
+export default function RevokeConsent({userId, setRevokedConsent, handleBeforeUnload}: {userId: string; setRevokedConsent: (value: boolean) => void; handleBeforeUnload: (event: BeforeUnloadEvent) => void}) {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    const searchParams = useSearchParams();
-    const userId = searchParams?.get("user_id");
-    const utils = api.useUtils();
-    const deleteUser = api.user.delete.useMutation({
-        onSuccess: async () => {
-            await utils.user.getUserById.invalidate({ userId: userId ?? "" });
-        },
-    });
+    const deleteUser = api.user.delete.useMutation();
 
     const router = useRouter();
 
@@ -38,12 +31,13 @@ export default function RevokeConsent() {
                 <DialogFooter>
                     <Button 
                         variant="destructive"
-                        onClick={() => {
+                        onClick={async () => {
                             if (!userId) return;
                             //TODO: To redirect back
-                            deleteUser.mutate({ userId: userId });
+                            await deleteUser.mutateAsync({ userId: userId });
                             setIsDialogOpen(false);
-                            router.push(exitPath);
+                            window.removeEventListener("beforeunload", handleBeforeUnload);
+                            setRevokedConsent(true);
                         }}
                     >
                         Confirm

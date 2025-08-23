@@ -67,6 +67,14 @@ export default function DomainTask({
   const [selectedLemonNumber, setSelectedLemonNumber] = useState<number | null>(null);
   const [selectedTrust, setSelectedTrust] = useState<number | null>(null);
 
+  const [startTime, setStartTime] = useState<number | null>(null);
+
+
+  // Start timer when the page is opened
+  useEffect(() => {
+    setStartTime(Date.now());
+    utils.hoveredAiSystem.getHoveredAiSystems.invalidate({ userId, domain });
+  }, []);
 
 
   // API mutations
@@ -97,6 +105,9 @@ export default function DomainTask({
   };
 
   const nextTask = async () => {
+    const elapsedMs = Date.now() - startTime!;
+    const elapsedSeconds = Math.floor(elapsedMs / 1000);
+
     if (chosenOption === "Own Answer") {
       await createTask.mutateAsync({
         userId: userId,
@@ -106,6 +117,7 @@ export default function DomainTask({
         usedAI: false,
         systemId: "",
         succeeded: selectedAnswer === currentTask.truePrediction,
+        timeSpent: elapsedSeconds,
       });
     } else {
       await createTask.mutateAsync({
@@ -116,6 +128,7 @@ export default function DomainTask({
         usedAI: true,
         systemId: selectedSystem!.id,
         succeeded: selectedSystem!.isLemon,
+        timeSpent: elapsedSeconds,
       });
 
       if (!revealedSystems.includes(selectedSystem!.id)) {
@@ -128,7 +141,10 @@ export default function DomainTask({
     setSelectedAnswer(null);
     setSelectedSystem(null);
 
+    setStartTime(Date.now());
+
     if (currentInstance == tasks.length - 1) {
+      utils.hoveredAiSystem.getHoveredAiSystems.invalidate({ userId, domain });
       onComplete?.();
     }
   };
@@ -152,16 +168,15 @@ export default function DomainTask({
     nextTask();
   };
 
+  const { data: hoveredSystemsData, isLoading: isLoadingHoveredSystems } = api.hoveredAiSystem.getHoveredAiSystems.useQuery({ userId, domain });
 
-
-  const revealedSystems: String[] = api.hoveredAiSystem.getHoveredAiSystems
-    .useQuery({ userId, domain }).data?.map((system) => String(system.aiSystemId)) || [];
+  const revealedSystems: String[] = hoveredSystemsData?.map((system) => String(system.aiSystemId)) ?? [];
 
   const createHoverAiSystem = api.hoveredAiSystem.create.useMutation(
     {
       onSuccess: () => {
         // Invalidate hovered systems query to update list
-        utils.hoveredAiSystem.getHoveredAiSystems.invalidate({ userId });
+        utils.hoveredAiSystem.getHoveredAiSystems.invalidate({ userId, domain });
       },
     }
   );
@@ -216,7 +231,7 @@ export default function DomainTask({
 
   
 
-  if (createTask.isPending) {
+  if (createTask.isPending || isLoadingHoveredSystems) {
     return <Loading />;
   }
 

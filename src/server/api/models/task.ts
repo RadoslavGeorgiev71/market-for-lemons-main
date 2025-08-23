@@ -9,6 +9,7 @@ const Task = z.object({
   usedAI: z.boolean(),
   systemId: z.string(),
   succeeded: z.boolean(),
+  timeSpent: z.number(),
 });
 
 export type Task = z.infer<typeof Task>;

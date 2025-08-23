@@ -29,6 +29,9 @@ import Tutorial from "../components/instructionPages/tutorial";
 import FinanceInstructions from "@/components/taskInsturctions/financeInstructions";
 import ReviewInstructions from "@/components/taskInsturctions/reviewInstructions";
 import MedicalInstructions from "@/components/taskInsturctions/medicalInstructions";
+import TaskInstructions from "@/components/layout/task-instructions";
+import RevokeConsent from "@/components/layout/revoke-consent";
+import DataInformation from "@/components/layout/dataInformation";
 
 
 const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -106,7 +109,21 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<string>("page1");
   const [unlockedTabs, setUnlockedTabs] = useState<string[]>(["page1", "page2"]);
 
-  const [currentTaskNum, setCurrentTaskNum] = useState<number>(1);
+  const [revokedConsent, setRevokedConsent] = useState<boolean>(false);
+
+  const [currentTaskNum, setCurrentTaskNum] = useState<number>(0);
+
+  useEffect(() => {
+    // Read from sessionStorage after the component mounts
+    const saved = sessionStorage.getItem('currentTaskNum');
+    setCurrentTaskNum(saved ? parseInt(saved, 10) : 0);
+  }, []);
+  useEffect(() => {
+    if (currentTaskNum !== null) {
+      sessionStorage.setItem('currentTaskNum', currentTaskNum.toString());
+    }
+  }, [currentTaskNum]);
+
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -209,7 +226,6 @@ export default function Home() {
                   lemonDensity: LemonDensity.Low,
                 });
                 const path = await calculatePath(user.userId, 0);
-                sessionStorage.setItem("canLeave", JSON.stringify(false));
                 router.replace(path);
               }}
               disabled={createUser.isPending}>
@@ -227,22 +243,6 @@ export default function Home() {
 
 
   const renderStateContent = () => {
-    if (getUser.isLoading || updateState.isPending) {
-      return <Loading />;
-    }
-
-    if (!getUser.data) {
-      return (
-        <>
-          <h1 className="text-2xl font-semibold">Contact researchers!</h1>
-          <p>
-            Unfortunately, we were unable to find your current submission.
-            Please contact the researchers for support at <a href="mailto:A.H.Erlei@tudelft.nl" className="text-blue-600 hover:underline">A.H.Erlei@tudelft.nl</a>
-          </p>
-        </>
-      );
-    }
-    
     if (!state) return <div>Invalid state</div>;
 
     switch (state) {
@@ -266,7 +266,7 @@ export default function Home() {
                 If you did not successfully answer all three comprehension questions after three trials,
                 you will not be allowed to participate in the experiment.</p>
 
-              <Tabs value={activeTab} onValueChange={handleTabChange} className="">
+              <Tabs value={activeTab} onValueChange={handleTabChange}>
                 <TabsList className="flex mt-5 space-x-2">
                   <TabsTrigger className="w-20" value="page1" disabled={isTabDisabled("page1")}>Page 1</TabsTrigger>
                   <TabsTrigger className="w-20" value="page2" disabled={isTabDisabled("page2")}>Page 2</TabsTrigger>
@@ -309,11 +309,11 @@ export default function Home() {
           </>
         );
       case State.preTask1:
-        return renderPreTask(1);
+        return renderPreTask(0);
       case State.preTask2:
-        return renderPreTask(2);
+        return renderPreTask(1);
       case State.preTask3:
-        return renderPreTask(3);
+        return renderPreTask(2);
       case State.finance:
         return <Finance userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
        aiPermutation={aiPermutations[currentTaskNum]} accuracies={accuracies[currentTaskNum]}
@@ -326,32 +326,11 @@ export default function Home() {
         return <Medical userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
        aiPermutation={aiPermutations[currentTaskNum]} accuracies={accuracies[currentTaskNum]}
        currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
-      case State.postTask:
-        return (
-          <div className="flex flex-col items-center gap-6">
-            <h1 className="text-2xl font-semibold">Post-Task</h1>
-            <Button onClick={() => {
-              updateState.mutate({
-                userId: userId!,
-                state: State.completion,
-              });
-            }} disabled={updateState.isPending}>
-              {updateState.isPending && <Loader2 className="animate-spin" />}
-              Complete Study
-            </Button>
-          </div>
-        );
       case State.completion:
         return (
-          <div className="flex flex-col items-center gap-6">
+          <div className="flex flex-col items-center">
             <h1 className="text-2xl font-semibold">Thank you for participating!</h1>
-          </div>
-        );
-      case State.revokedConsent:
-        return (
-          <div className="flex flex-col items-center gap-6">
-            <h1 className="text-2xl font-semibold">Consent Revoked</h1>
-            <p>You have revoked your consent to participate in this study.</p>
+            <p>You have completed all of the study. You can safely close this tab.</p>
           </div>
         );
       default:
@@ -360,14 +339,17 @@ export default function Home() {
   };
 
   const onTaskCompletion = () => {
-    if (currentTaskNum === 3) {
-
-    } else {
-      setCurrentTaskNum(currentTaskNum + 1);
+    if (currentTaskNum === 2) {
       updateState.mutate({
         userId: userId!,
-        state: State[`preTask${currentTaskNum}` as keyof typeof State],
+        state: State.completion,
       });
+    } else {
+      updateState.mutate({
+        userId: userId!,
+        state: State[`preTask${currentTaskNum + 2}` as keyof typeof State],
+      });
+      setCurrentTaskNum(currentTaskNum + 1);
     }
 
     // reset the current instance
@@ -375,33 +357,64 @@ export default function Home() {
   };
 
   const renderPreTask = (taskNumber: number) => {
-    if (taskPermutation[taskNumber] === 1) {
+    if (taskPermutation[taskNumber] === 0) {
       return <FinanceInstructions userId={userId!} updateState={updateState}/>;
-    } else if (taskPermutation[taskNumber] === 2) {
+    } else if (taskPermutation[taskNumber] === 1) {
       return <ReviewInstructions userId={userId!} updateState={updateState}/>;
     } else {
       return <MedicalInstructions userId={userId!} updateState={updateState}/>;
     }
   }
 
-  const renderTask = (taskNumber: number) => {
-    if (taskPermutation[taskNumber] === 1) {
-      return <Finance userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
-       aiPermutation={aiPermutations[taskNumber]} accuracies={accuracies[taskNumber]}
-       currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
-    } else if (taskPermutation[taskNumber] === 2) {
-      return <Reviews userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
-       aiPermutation={aiPermutations[taskNumber]} accuracies={accuracies[taskNumber]}
-       currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
-    } else {
-      return <Medical userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
-       aiPermutation={aiPermutations[taskNumber]} accuracies={accuracies[taskNumber]}
-       currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
-    }
-  };
+
+
+  if (getUser.isLoading || updateState.isPending) {
+    return (
+      <div className="flex flex-col bg-background min-h-screen w-full items-center justify-center gap-6 p-24">
+        <Loading />
+      </div>
+    );
+  }
+
+  if (revokedConsent) {
+    return (
+      <div className="flex flex-col bg-background min-h-screen w-full items-center justify-center gap-6 p-24">
+        <h1 className="text-2xl font-semibold">Consent Revoked</h1>
+        <p>You have revoked your consent to participate in this study. All of your data has been safely deleted. You can close this tab.</p>
+      </div>
+    )
+  }
+
+  if (!getUser.data) {
+    return (
+      <div className="flex flex-col bg-background min-h-screen w-full items-center justify-center gap-6 p-24">
+        <h1 className="text-2xl font-semibold">Contact researchers!</h1>
+        <p>
+          Unfortunately, we were unable to find your current submission.
+          Please contact the researchers for support at <a href="mailto:A.H.Erlei@tudelft.nl" className="text-blue-600 hover:underline">A.H.Erlei@tudelft.nl</a>
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col bg-background min-h-screen w-full items-center justify-center gap-6 p-24">
+      {/* Absolute top left and top right task instructions and revoke consent button */}
+      <div className="absolute top-0 left-0 right-0 flex justify-between p-4">
+        <div>
+          {(state === State.finance || state === State.reviews || state === State.medical) && (
+              <div className="flex flex-col gap-6">
+                <TaskInstructions disclosure={disclosure} taskPermutation={taskPermutation} />
+                <DataInformation disclosure={disclosure} />
+              </div>
+            )}
+        </div>
+        <div>
+            {state !== State.completion && !revokedConsent && (
+            <RevokeConsent userId={userId!} setRevokedConsent={setRevokedConsent} handleBeforeUnload={handleBeforeUnload} />
+          )}
+        </div> 
+      </div>
       {renderStateContent()}
     </div>
   );

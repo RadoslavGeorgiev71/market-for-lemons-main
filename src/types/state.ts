@@ -10,7 +10,5 @@ export enum State {
   preTask3 = "preTask3",
   medical = "medical",
 
-  postTask = "postTask",
-  revokedConsent = "revokedConsent",
   completion = "completion",
 }
