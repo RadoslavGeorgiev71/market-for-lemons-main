@@ -4,7 +4,7 @@ import data from "../data/data.json";
 import { AISystem } from "@/types/aiSystem";
 
 import { Task } from "@/types/task";
-import DomainTask from "./doomainTask";
+import DomainTask from "./domainTask";
 
 
 const financeTasks = data.loanPrediction.instances;
