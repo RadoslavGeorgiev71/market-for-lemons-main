@@ -12,8 +12,8 @@ interface ReviewProps {
     userId: string;
     disclosure: Disclosure;
     instancePermutation: number[];
-    aiPermutation: number[];
-    accuracies: number[];
+    aiPermutations: number[][];
+    accuracies: number[][];
     currentInstance: number;
     aiSystems: AISystem[];
     updatePath: (userId: string, newInstance: number) => void;
@@ -21,7 +21,7 @@ interface ReviewProps {
     tutorial?: boolean;
 }
 
-export default function Reviews({ userId, disclosure, instancePermutation, aiPermutation, accuracies,
+export default function Reviews({ userId, disclosure, instancePermutation, aiPermutations, accuracies,
     currentInstance, aiSystems, updatePath, onComplete, tutorial }: ReviewProps) {
     const reviewTerms = {
         positive: "Genuine",
@@ -46,7 +46,7 @@ export default function Reviews({ userId, disclosure, instancePermutation, aiPer
             disclosure={disclosure}
             tasks={tutorial ? reviewTutorialTasks : reviewTasks}
             instancePermutation={instancePermutation}
-            aiPermutation={aiPermutation}
+            aiPermutations={aiPermutations}
             accuracies={accuracies}
             currentInstance={currentInstance}
             aiSystems={aiSystems}

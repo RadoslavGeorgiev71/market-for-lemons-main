@@ -14,8 +14,8 @@ interface FinanceProps{
   userId: string;
   disclosure: Disclosure;
   instancePermutation: number[];
-  aiPermutation: number[];
-  accuracies: number[];
+  aiPermutations: number[][];
+  accuracies: number[][];
   currentInstance: number;
   aiSystems: AISystem[];
   updatePath: (userId: string, newInstance: number) => void;
@@ -23,7 +23,7 @@ interface FinanceProps{
   tutorial?: boolean;
 }
 
-export default function Finance({ userId, disclosure, instancePermutation, aiPermutation, accuracies,
+export default function Finance({ userId, disclosure, instancePermutation, aiPermutations, accuracies,
    currentInstance, aiSystems, updatePath, onComplete, tutorial }: FinanceProps) {
   const financeTerms = {
     positive: "Accept",
@@ -59,7 +59,7 @@ export default function Finance({ userId, disclosure, instancePermutation, aiPer
       disclosure={disclosure}
       tasks={tutorial ? financeTutorialTasks : financeTasks}
       instancePermutation={instancePermutation}
-      aiPermutation={aiPermutation}
+      aiPermutations={aiPermutations}
       accuracies={accuracies}
       currentInstance={currentInstance}
       aiSystems={aiSystems}

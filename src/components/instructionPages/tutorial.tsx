@@ -11,8 +11,8 @@ interface tutorialProps {
     disclosure: Disclosure;
     aiSystems: AISystem[];
     taskPermutations: number[];
-    aiPermutations: number[][];
-    accuracies: number[][];
+    aiPermutations: number[][][];
+    accuracies: number[][][];
     unlockComprehension: () => void;
 }
 
@@ -34,7 +34,7 @@ export default function Tutorial({ userId, disclosure, aiSystems, taskPermutatio
         sessionStorage.setItem('currentTask', currentTask.toString());
     }, [currentTask]);
 
-    // keep track of current instance(0 to 4)
+    // keep track of current instance(0 to 1)
     const [currentInstance, setCurrentInstance] = useState(() => {
         return parseInt(sessionStorage.getItem('currentInstance') || '0');
     });
@@ -43,7 +43,7 @@ export default function Tutorial({ userId, disclosure, aiSystems, taskPermutatio
         sessionStorage.setItem('currentInstance', currentInstance.toString());
     }, [currentInstance]);
 
-    const instancePermutation = [0, 1, 2, 3, 4];
+    const instancePermutation = [0, 1];
 
     const updateInstance = () => {
         setCurrentInstance((prev) => (prev + 1));
@@ -88,21 +88,21 @@ export default function Tutorial({ userId, disclosure, aiSystems, taskPermutatio
     }
 
     return (
-        <div ref={tutorialRef} className="p-4 border rounded-lg bg-background">
-            <p className="mb-10">Here is a tutorial for the experiment. It contains 5 rounds of each of the 3 tasks. The idea is to familiarize yourself with the interface and the types of questions.</p>
+        <div ref={tutorialRef} className="p-4 border rounded-lg bg-background pt-15">
+            {/* <p className="mb-10">Here is a tutorial for the experiment. It contains 5 rounds of each of the 3 tasks. The idea is to familiarize yourself with the interface and the types of questions.</p> */}
             {taskPermutations[currentTask] == 0 && (
                 <Finance userId={userId} disclosure={disclosure} instancePermutation={instancePermutation}
-                    aiPermutation={aiPermutations[currentTask]} accuracies={accuracies[currentTask]} currentInstance={currentInstance}
+                    aiPermutations={aiPermutations[currentTask]} accuracies={accuracies[currentTask]} currentInstance={currentInstance}
                     aiSystems={aiSystems} updatePath={updateInstance} onComplete={onCompleteTask} tutorial={true}></Finance>
             )}
             {taskPermutations[currentTask] == 1 && (
                 <Reviews userId={userId} disclosure={disclosure} instancePermutation={instancePermutation}
-                    aiPermutation={aiPermutations[currentTask]} accuracies={accuracies[currentTask]} currentInstance={currentInstance}
+                    aiPermutations={aiPermutations[currentTask]} accuracies={accuracies[currentTask]} currentInstance={currentInstance}
                     aiSystems={aiSystems} updatePath={updateInstance} onComplete={onCompleteTask} tutorial={true}></Reviews>
             )}
             {taskPermutations[currentTask] == 2 && (
                 <Medical userId={userId} disclosure={disclosure} instancePermutation={instancePermutation}
-                    aiPermutation={aiPermutations[currentTask]} accuracies={accuracies[currentTask]} currentInstance={currentInstance}
+                    aiPermutations={aiPermutations[currentTask]} accuracies={accuracies[currentTask]} currentInstance={currentInstance}
                     aiSystems={aiSystems} updatePath={updateInstance} onComplete={onCompleteTask} tutorial={true}></Medical>
             )}
         </div>

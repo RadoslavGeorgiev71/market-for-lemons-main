@@ -32,6 +32,7 @@ import MedicalInstructions from "@/components/taskInsturctions/medicalInstructio
 import RevokeConsent from "@/components/layout/revoke-consent";
 import DataInformation from "@/components/layout/dataInformation";
 import Instructions from "@/components/layout/instructions";
+import { parse } from "path";
 
 
 const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -100,13 +101,31 @@ export default function Home() {
   const disclosure = disclosureCode === "f" ? Disclosure.full : disclosureCode === "p" ? Disclosure.partial : Disclosure.none;
   const lemonDensity = lemonDensityCode === "l" ? LemonDensity.Low : lemonDensityCode === "m" ? LemonDensity.Medium : LemonDensity.High;
   const taskPermutation = data.taskPermutations[parseInt(taskPermutationNum, 10)];
+
   const instancePermutation = data.instancePermutations[parseInt(instancePermutationNum, 10)];
-  const aiPermutations = data.aiPermutations[parseInt(instancePermutationNum, 10)];
-  const accuracies = data.accuracies[parseInt(instancePermutationNum, 10)];
+
+  // get the next 30 aiPermutaions and accuracies
+  const circularSlice = (array: number[][], start: number, length: number) => {
+    const result = [];
+
+    for (let i = 0; i < 3; i++) {
+      const tempResult = [];
+      for (let j = 0; j < length; j++) {
+        tempResult.push(array[(start + j + i * length) % array.length]);
+      }
+      result.push(tempResult);
+    }
+
+    return result as number[][][];
+  }
+
+  const aiPermutations: number[][][] = circularSlice(data.aiPermutations, parseInt(instancePermutationNum, 10), 10);
+  const accuracies: number[][][] = circularSlice(data.accuracies, parseInt(instancePermutationNum, 10), 10);
+
   const currentInstance = parseInt(currentInstanceNum, 10);
 
-  const tutorialAiPermutations = data.aiPermutations[(parseInt(instancePermutationNum, 10) + 1) % 400];
-  const tutorialAccuracies = data.accuracies[(parseInt(instancePermutationNum, 10) + 1) % 400];
+  const tutorialAiPermutations: number[][][] = circularSlice(data.aiPermutations, (parseInt(instancePermutationNum, 10) + 30) % 400, 10);
+  const tutorialAccuracies: number[][][] = circularSlice(data.accuracies, (parseInt(instancePermutationNum, 10) + 30) % 400, 10);
 
   const aiSystems: AISystem[] = lemonDensity === LemonDensity.Low ? 
     data.ais.lowDensity : 
@@ -155,71 +174,25 @@ export default function Home() {
   if (!userId) {
     return (
       <div className="flex flex-col bg-background min-h-screen w-full items-center justify-center gap-6 p-24">
-        <div className="md:h-[70vh] overflow-y-auto center items-center p-4 bg-gray-50 rounded-md">
-          <h2 className="text-xl max-w-3xl mb-2">Informed Consent</h2>
+        <div className="overflow-y-auto center items-center p-4 bg-gray-50 rounded-md space-y-5">
+          <h2 className="text-xl max-w-3xl mb-2">About the survey</h2>
           <p>
-            We are a team of researchers from Delft University of Technology, Netherlands,
-             University of Göttingen, Germany, and University of Cagliari, Italy.
-             This study explores how individuals interpret and respond to programming errors,
-            with the aim of improving how such errors are explained based on a programmer’s skill level.
-             You are invited to take part in this research project.
+            We are a group of researchers of researchers from Delft University of Technology, Netherlands, University of Göttingen, Germany, and University of Cagliari, Italy.
+In this research project, we aim to investigate how users interact with AI systems across different tasks.
+You will complete a series of tasks involving a pool of AI systems that can help with cancer prediction, loan prediction, and deceptive hotel review identification.
+Completion of these tasks does not require any specific equipment beyond a computer with internet access.
           </p>
-          <h2 className="text-xl max-w-3xl mb-2 mt-5">Your Participation</h2>
-          <p>
-            If you agree to participate, you will begin by ….. 
-            The entire study should take approximately XXX minutes to complete.
-            You don’t need any special equipment to participate in the study.
-            The study is designed to be completed entirely online.Your involvement is completely voluntary,
-            and you are free to withdraw at any point without penalty. Note, however, that if you choose to withdraw,
-            you will NOT receive any compensation for your participation apart from the base payment.
-          </p>
-          <h2 className="text-xl max-w-3xl mb-2 mt-5">Integrity & Fairness</h2>
-          <p>
-            <strong>Important:</strong> To maintain the integrity of this study, please complete all tasks independently,
-            without using external assistance such as large language models (LLMs), AI tools of any sort,
-            search engines, or help from others. Copy-pasting answers from any source, including external websites or tools,
-            is strictly prohibited and will result in immediate disqualification.
-            Your responses must reflect your own reasoning and understanding.
-            It is essential that you thoughtfully engage with each question rather than submitting answers at random or
-            without proper consideration. We will actively check for signs of inauthentic or careless participation.
-          </p>
-          <p className="font-bold mt-2">The use of LLMs (e.g., ChatGPT, Copilot), or failing to engage meaningfully with the task,
-            will result in your responses being invalidated.
-          </p>
-          <h2 className="text-xl max-w-3xl mb-2 mt-5">What Data Will Be Collected?</h2>
-          <p>
-            We will collect the following information during your participation:
+          <p className="mt-2 mb-2">
+            <strong>We will collect the following information:</strong>
           </p>
           <ul className="list-disc pl-6">
-            <li>...</li>
             <li>Your interaction data: Your interactions in the task interfaces, metrics such as the time you spend on each question, whether the survey window remains active (for example, when you switch tabs or windows), and keystroke data (e.g., if you copy or paste code).</li>
             <li>Your task and survey responses: The responses you provide within tasks, your answers to the multiple-choice questions, open questions and Likert-style questions throughout the study.</li>
           </ul>
-          <h2 className="text-xl max-w-3xl mb-2 mt-5">Confidentiality & Data Use</h2>
           <p>
-            We will only collect the data described above, and your information will be treated with strict confidentiality.
-            Your PROLIFIC_ID will be collected solely for the purposes of tracking participation and ensuring fair monetary
-            compensation. After the data collection phase is complete, all PROLIFIC_IDs will be anonymized so that your responses
-            cannot be linked back to you. All data will be securely stored in password-protected electronic systems.
-            Please note that the data collected in this study may be published or shared in anonymized form.
-            This anonymized dataset may include your responses to the survey and coding submissions,
-            but will exclude any personal identifiers (i.e., PROLIFIC_ID), ensuring that your responses cannot be
-            traced back to you.
-          </p>
-          <h2 className="text-xl max-w-3xl mb-2 mt-5">Contact Information</h2>
-          <p>
-            You can further contact the researchers for any clarification.
-            To do this, send an email to <a href="mailto:A.H.Erlei@tudelft.nl" className="text-blue-600 hover:underline">A.H.Erlei@tudelft.nl</a> for any questions.
-          </p>
-          <h2 className="text-xl max-w-3xl mb-2 mt-5">Your Rights</h2>
-          <p className="mb-4">
-            By clicking  &quot;Yes, I consent&quot;  at the bottom of this page, you confirm that you have carefully read, understood, and consent to the above information.
-          </p>
-          <p className="mb-4">
-            Note: You can exit the task at any time. This will imply revoking your consent, and subsequently, all your data will be discarded from our databases.
-          </p>
-          <p className="mb-4">
-            Do you consent to participate in this study under the above conditions?
+            We do not collect any data aside from the information described, and we will keep your information confidential. All data is stored in a password-protected electronic format. The data we gather may be published in anonymized form.
+<strong>By clicking "I consent" below, you confirm that you have read, understood, and consent to the above information.</strong>
+Note: You can exit the survey at any time. This will imply revoking your consent, and subsequently, all your data will be discarded from our databases. If you want to contact the researchers beyond this survey you can email at <a href="mailto:A.H.Erlei@tudelft.nl" className="text-blue-600 hover:underline">A.H.Erlei@tudelft.nl</a> for questions. Do you consent to participate in this study under the above conditions?
           </p>
           <div className="flex flex-row w-full items-center justify-center">
             <Button className="mr-5" 
@@ -261,14 +234,14 @@ export default function Home() {
             <div className="center items-center p-4 bg-gray-50 rounded-md">
               <p className="mb-2">Thank you for participating in this experiment!</p>
               <p className="mb-2">
-              The experiment will take approximately 20 minutes. You will be paid £1.5 for completing the experiment.
+              The survey will take approximately 20 minutes. You will be paid £1.5 for completing the experiment.
               Additionally, you can earn a bonus of up to  £3.6 that depends on your choices, as explained in more detail on the next pages.
               Throughout the experiment, we will use Coins instead of Pounds.
               The Coins you earn will be converted into Pounds at the end of the experiment.
               The following conversion rate applies: 100 Coins =  £0.4</p>
-              <p className="mb-2">Please read the following instructions carefully.
-                After the instructions, you will need to answer a number of comprehension questions.
-                You can only proceed with the experiment after answering them correctly within three trials.
+              <p className="mb-2">Please read through the instruction pages below carefully in order.
+                After you have read through the instructions you will have to complete a short tutorial, and answer some comprehension questions.
+                You can only proceed with the experiment after answering the questions correctly within three trials.
                 If you did not successfully answer all three comprehension questions after three trials,
                 you will not be allowed to participate in the experiment.</p>
 
@@ -322,15 +295,15 @@ export default function Home() {
         return renderPreTask(2);
       case State.finance:
         return <Finance userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
-       aiPermutation={aiPermutations[currentTaskNum]} accuracies={accuracies[currentTaskNum]}
+       aiPermutations={aiPermutations[currentTaskNum]} accuracies={accuracies[currentTaskNum]}
        currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
       case State.reviews:
         return <Reviews userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
-       aiPermutation={aiPermutations[currentTaskNum]} accuracies={accuracies[currentTaskNum]}
+       aiPermutations={aiPermutations[currentTaskNum]} accuracies={accuracies[currentTaskNum]}
        currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
       case State.medical:
         return <Medical userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
-       aiPermutation={aiPermutations[currentTaskNum]} accuracies={accuracies[currentTaskNum]}
+       aiPermutations={aiPermutations[currentTaskNum]} accuracies={accuracies[currentTaskNum]}
        currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
       case State.completion:
         return (

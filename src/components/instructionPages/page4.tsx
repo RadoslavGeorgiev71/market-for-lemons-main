@@ -10,6 +10,8 @@ export default function Page4({ taskPermutation }: { taskPermutation: number[] }
                 ))}
             </ol>
             <p>You will complete 10 prediction rounds for each. You will receive detailed instructions before each respective task.</p>
+            <p>During each task, you have access to these 5 instruction pages (button "Instructions") and to a summary of the AI system's parameters(button "Systems Information"). You can additionally revoke your consent at any time via the button "Revoke Consent" and your data will be deleted.</p>
+            <p>Please now go to Page 5.</p>
         </div>
     )
 }
