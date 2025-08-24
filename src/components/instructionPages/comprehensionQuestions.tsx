@@ -30,7 +30,7 @@ export default function ComprehensionQuestions({disclosure, userId, updateState,
     const handleSubmit = () => {
         if (selectedAnswer1 === "2" &&
             selectedAnswer2 === "4" &&
-            selectedAnswer3 === "2" &&
+            selectedAnswer3 === "1" &&
             selectedAnswer4 === "3"
         ) {
             // clean up data from tutorial
@@ -64,7 +64,7 @@ export default function ComprehensionQuestions({disclosure, userId, updateState,
         setShowDialog(true);
         selectedAnswer1 === "2" ? setIsCorrect1(true) : setIsCorrect1(false);
         selectedAnswer2 === "4" ? setIsCorrect2(true) : setIsCorrect2(false);
-        selectedAnswer3 === "2" ? setIsCorrect3(true) : setIsCorrect3(false);
+        selectedAnswer3 === "1" ? setIsCorrect3(true) : setIsCorrect3(false);
         selectedAnswer4 === "3" ? setIsCorrect4(true) : setIsCorrect4(false);
         setVisibleResult(true);
     };

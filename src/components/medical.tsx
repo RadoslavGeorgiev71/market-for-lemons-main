@@ -13,8 +13,8 @@ interface MedicalProps {
     userId: string;
     disclosure: Disclosure;
     instancePermutation: number[];
-    aiPermutation: number[];
-    accuracies: number[];
+    aiPermutations: number[][];
+    accuracies: number[][];
     currentInstance: number;
     aiSystems: AISystem[];
     updatePath: (userId: string, newInstance: number) => void;
@@ -22,7 +22,7 @@ interface MedicalProps {
     tutorial?: boolean;
 }
 
-export default function Medical({ userId, disclosure, instancePermutation, aiPermutation, accuracies,
+export default function Medical({ userId, disclosure, instancePermutation, aiPermutations, accuracies,
      currentInstance, aiSystems, updatePath, onComplete, tutorial }: MedicalProps) {
     const medicalTerms = {
         positive: "Benign",
@@ -53,7 +53,7 @@ export default function Medical({ userId, disclosure, instancePermutation, aiPer
             disclosure={disclosure}
             tasks={tutorial ? medicalTutorialTasks : medicalTasks}
             instancePermutation={instancePermutation}
-            aiPermutation={aiPermutation}
+            aiPermutations={aiPermutations}
             accuracies={accuracies}
             currentInstance={currentInstance}
             aiSystems={aiSystems}

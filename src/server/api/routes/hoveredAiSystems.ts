@@ -10,9 +10,9 @@ export const hoveredAiSystemRouter = createTRPCRouter({
             const { ctx, input } = opts;
 
             const [newHoveredAiSystem] = await ctx.sql`
-                INSERT INTO hovered_ai_systems (user_id, domain, ai_system_id)
-                VALUES (${input.userId}, ${input.domain}, ${input.aiSystem})
-                RETURNING user_id AS "userId", domain AS "domain", ai_system_id AS "aiSystem"
+                INSERT INTO hovered_ai_systems (user_id, domain, ai_system_id, question_num)
+                VALUES (${input.userId}, ${input.domain}, ${input.aiSystem}, ${input.questionNum})
+                RETURNING user_id AS "userId", domain AS "domain", ai_system_id AS "aiSystem", question_num AS "questionNum"
             `;
 
             return newHoveredAiSystem
@@ -36,14 +36,15 @@ export const hoveredAiSystemRouter = createTRPCRouter({
     getHoveredAiSystems: publicProcedure
         .input(z.object({
             userId: z.string(),
-            domain: z.string()
+            domain: z.string(),
+            questionNum: z.number()
         }))
         .query(async (opts) => {
             const { ctx, input } = opts;
 
             const hoveredAiSystems = await ctx.sql`
-                SELECT user_id AS "userId", domain AS "domain", ai_system_id AS "aiSystemId" FROM hovered_ai_systems
-                WHERE user_id = ${input.userId} AND domain = ${input.domain}
+                SELECT user_id AS "userId", domain AS "domain", ai_system_id AS "aiSystemId", question_num AS "questionNum" FROM hovered_ai_systems
+                WHERE user_id = ${input.userId} AND domain = ${input.domain} AND question_num = ${input.questionNum}
             `;
 
             return hoveredAiSystems;

@@ -21,8 +21,8 @@ interface DomainTaskProps {
   domain: string;
   disclosure: Disclosure;
   instancePermutation: number[];
-  aiPermutation: number[];
-  accuracies: number[];
+  aiPermutations: number[][];
+  accuracies: number[][];
   currentInstance: number;
   tasks: Task[];
   aiSystems: AISystem[];
@@ -43,7 +43,7 @@ export default function DomainTask({
   tasks,
   aiSystems,
   instancePermutation,
-  aiPermutation,
+  aiPermutations,
   accuracies,
   currentInstance,
   updatePath,
@@ -74,7 +74,7 @@ export default function DomainTask({
   // Start timer when the page is opened
   useEffect(() => {
     setStartTime(Date.now());
-    utils.hoveredAiSystem.getHoveredAiSystems.invalidate({ userId, domain });
+    utils.hoveredAiSystem.getHoveredAiSystems.invalidate({ userId, domain, questionNum: currentInstance + 1 });
   }, []);
 
 
@@ -109,6 +109,8 @@ export default function DomainTask({
     const elapsedMs = Date.now() - startTime!;
     const elapsedSeconds = Math.floor(elapsedMs / 1000);
 
+    setRevealedSystems([]);
+
     if (chosenOption === "Own Answer") {
       await createTask.mutateAsync({
         userId: userId,
@@ -133,7 +135,7 @@ export default function DomainTask({
       });
 
       if (!revealedSystems.includes(selectedSystem!.id)) {
-        await createHoverAiSystem.mutateAsync({ userId: userId, domain: domain, aiSystem: selectedSystem!.id });
+        await createHoverAiSystem.mutateAsync({ userId: userId, domain: domain, aiSystem: selectedSystem!.id, questionNum: currentInstance + 1 });
       }
     }
 
@@ -143,7 +145,6 @@ export default function DomainTask({
     setStartTime(Date.now());
 
     if (currentInstance == tasks.length - 1) {
-      utils.hoveredAiSystem.getHoveredAiSystems.invalidate({ userId, domain });
       onComplete?.();
     } else {
       updatePath(userId, currentInstance + 1);
@@ -169,20 +170,28 @@ export default function DomainTask({
     nextTask();
   };
 
-  const { data: hoveredSystemsData, isLoading: isLoadingHoveredSystems } = api.hoveredAiSystem.getHoveredAiSystems.useQuery({ userId, domain });
+  const { data: hoveredSystemsData } = api.hoveredAiSystem.getHoveredAiSystems.useQuery({ userId, domain, questionNum: currentInstance + 1 });
 
-  const revealedSystems: string[] = hoveredSystemsData?.map((system) => String(system.aiSystemId)) ?? [];
+  const [revealedSystems, setRevealedSystems] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (hoveredSystemsData) {
+      setRevealedSystems(
+        hoveredSystemsData.map((system) => String(system.aiSystemId))
+      );
+    }
+  }, [hoveredSystemsData]);
 
   const createHoverAiSystem = api.hoveredAiSystem.create.useMutation(
     {
       onSuccess: () => {
         // Invalidate hovered systems query to update list
-        utils.hoveredAiSystem.getHoveredAiSystems.invalidate({ userId, domain });
+        utils.hoveredAiSystem.getHoveredAiSystems.invalidate({ userId, domain, questionNum: currentInstance + 1 });
       },
     }
   );
 
-  const HOVER_TIME = 1000; // ms until reveal
+  const HOVER_TIME = 250; // ms until reveal
 
   const handleMouseEnter = (system: AISystem) => {
     if (disclosure == Disclosure.none) return; // no hover when there is no disclosure
@@ -199,7 +208,7 @@ export default function DomainTask({
 
       if (pct >= 100) {
         clearInterval(hoverTimer.current!);
-        await createHoverAiSystem.mutateAsync({ userId: userId, domain, aiSystem: system.id });
+        await createHoverAiSystem.mutateAsync({ userId: userId, domain, aiSystem: system.id, questionNum: currentInstance + 1 });
         setHoveredSystem(null);
       }
     }, 16);
@@ -243,7 +252,7 @@ export default function DomainTask({
 
   
 
-  if (createTask.isPending || isLoadingHoveredSystems) {
+  if (createTask.isPending) {
     return <Loading />;
   }
 
@@ -312,7 +321,7 @@ export default function DomainTask({
             <h2 className="text-xl max-w-3xl mb-4 mt-5 text-center flex-1">AI pool</h2>
             <div className="grid grid-cols-5 gap-4 p-2 border-2 rounded-lg border-gray-50 min-w-175">
               {/* Display AI Systems in instance order */}
-              {aiPermutation.map(i => aiSystems[i]).map((system, index) => {
+              {aiPermutations[currentInstance].map(i => aiSystems[i]).map((system, index) => {
                 const isRevealed = revealedSystems.includes(system.id);
                 const isHovered = hoveredSystem === system.id;
 
@@ -369,7 +378,7 @@ export default function DomainTask({
                         
                         {isRevealed && <div className="text-center text-xs min-w-30 mt-2 text-muted-foreground">
                           {disclosure !== Disclosure.none && (
-                            <p>Accuracy: {system.accuracy + accuracies[index]}%</p>
+                            <p>Accuracy: {system.accuracy + accuracies[currentInstance][index]}%</p>
                           )}
                           {disclosure === Disclosure.full && (
                             <p>Data Quality: {system.dataQuality}</p>
@@ -418,7 +427,7 @@ export default function DomainTask({
                         
                         <div className="text-center text-xs min-w-30 mt-2 text-muted-foreground">
                           {disclosure !== Disclosure.none && (
-                            <p>Accuracy: {selectedSystem!.accuracy + accuracies[selectedSystemIndex!]}%</p>
+                            <p>Accuracy: {selectedSystem!.accuracy + accuracies[currentInstance][selectedSystemIndex!]}%</p>
                           )}
                           {disclosure === Disclosure.full && (
                             <p>Data Quality: {selectedSystem!.dataQuality}</p>

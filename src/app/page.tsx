@@ -32,6 +32,7 @@ import MedicalInstructions from "@/components/taskInsturctions/medicalInstructio
 import RevokeConsent from "@/components/layout/revoke-consent";
 import DataInformation from "@/components/layout/dataInformation";
 import Instructions from "@/components/layout/instructions";
+import { parse } from "path";
 
 
 const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -100,13 +101,31 @@ export default function Home() {
   const disclosure = disclosureCode === "f" ? Disclosure.full : disclosureCode === "p" ? Disclosure.partial : Disclosure.none;
   const lemonDensity = lemonDensityCode === "l" ? LemonDensity.Low : lemonDensityCode === "m" ? LemonDensity.Medium : LemonDensity.High;
   const taskPermutation = data.taskPermutations[parseInt(taskPermutationNum, 10)];
+
   const instancePermutation = data.instancePermutations[parseInt(instancePermutationNum, 10)];
-  const aiPermutations = data.aiPermutations[parseInt(instancePermutationNum, 10)];
-  const accuracies = data.accuracies[parseInt(instancePermutationNum, 10)];
+
+  // get the next 30 aiPermutaions and accuracies
+  const circularSlice = (array: number[][], start: number, length: number) => {
+    const result = [];
+
+    for (let i = 0; i < 3; i++) {
+      const tempResult = [];
+      for (let j = 0; j < length; j++) {
+        tempResult.push(array[(start + j + i * length) % array.length]);
+      }
+      result.push(tempResult);
+    }
+
+    return result as number[][][];
+  }
+
+  const aiPermutations: number[][][] = circularSlice(data.aiPermutations, parseInt(instancePermutationNum, 10), 10);
+  const accuracies: number[][][] = circularSlice(data.accuracies, parseInt(instancePermutationNum, 10), 10);
+
   const currentInstance = parseInt(currentInstanceNum, 10);
 
-  const tutorialAiPermutations = data.aiPermutations[(parseInt(instancePermutationNum, 10) + 1) % 400];
-  const tutorialAccuracies = data.accuracies[(parseInt(instancePermutationNum, 10) + 1) % 400];
+  const tutorialAiPermutations: number[][][] = circularSlice(data.aiPermutations, (parseInt(instancePermutationNum, 10) + 30) % 400, 10);
+  const tutorialAccuracies: number[][][] = circularSlice(data.accuracies, (parseInt(instancePermutationNum, 10) + 30) % 400, 10);
 
   const aiSystems: AISystem[] = lemonDensity === LemonDensity.Low ? 
     data.ais.lowDensity : 
@@ -322,15 +341,15 @@ export default function Home() {
         return renderPreTask(2);
       case State.finance:
         return <Finance userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
-       aiPermutation={aiPermutations[currentTaskNum]} accuracies={accuracies[currentTaskNum]}
+       aiPermutations={aiPermutations[currentTaskNum]} accuracies={accuracies[currentTaskNum]}
        currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
       case State.reviews:
         return <Reviews userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
-       aiPermutation={aiPermutations[currentTaskNum]} accuracies={accuracies[currentTaskNum]}
+       aiPermutations={aiPermutations[currentTaskNum]} accuracies={accuracies[currentTaskNum]}
        currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
       case State.medical:
         return <Medical userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
-       aiPermutation={aiPermutations[currentTaskNum]} accuracies={accuracies[currentTaskNum]}
+       aiPermutations={aiPermutations[currentTaskNum]} accuracies={accuracies[currentTaskNum]}
        currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
       case State.completion:
         return (
