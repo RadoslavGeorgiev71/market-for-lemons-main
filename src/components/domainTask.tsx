@@ -70,11 +70,11 @@ export default function DomainTask({
 
   const [startTime, setStartTime] = useState<number | null>(null);
 
+  const [revealedSystems, setRevealedSystems] = useState<string[]>([]);
 
   // Start timer when the page is opened
   useEffect(() => {
     setStartTime(Date.now());
-    utils.hoveredAiSystem.getHoveredAiSystems.invalidate({ userId, domain, questionNum: currentInstance + 1 });
   }, []);
 
 
@@ -105,9 +105,17 @@ export default function DomainTask({
     }
   };
 
+
+
+  const createHoverAiSystem = api.hoveredAiSystem.create.useMutation();
+
   const nextTask = async () => {
     const elapsedMs = Date.now() - startTime!;
     const elapsedSeconds = Math.floor(elapsedMs / 1000);
+
+    for (const system of revealedSystems) {
+      await createHoverAiSystem.mutateAsync({ userId: userId, domain: domain, aiSystem: system, questionNum: currentInstance + 1 });
+    }
 
     setRevealedSystems([]);
 
@@ -133,10 +141,6 @@ export default function DomainTask({
         succeeded: systemAnswer === currentTask.truePrediction,
         timeSpent: elapsedSeconds,
       });
-
-      if (!revealedSystems.includes(selectedSystem!.id)) {
-        await createHoverAiSystem.mutateAsync({ userId: userId, domain: domain, aiSystem: selectedSystem!.id, questionNum: currentInstance + 1 });
-      }
     }
 
     setSelectedAnswer(null);
@@ -170,27 +174,6 @@ export default function DomainTask({
     nextTask();
   };
 
-  const { data: hoveredSystemsData } = api.hoveredAiSystem.getHoveredAiSystems.useQuery({ userId, domain, questionNum: currentInstance + 1 });
-
-  const [revealedSystems, setRevealedSystems] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (hoveredSystemsData) {
-      setRevealedSystems(
-        hoveredSystemsData.map((system) => String(system.aiSystemId))
-      );
-    }
-  }, [hoveredSystemsData]);
-
-  const createHoverAiSystem = api.hoveredAiSystem.create.useMutation(
-    {
-      onSuccess: () => {
-        // Invalidate hovered systems query to update list
-        utils.hoveredAiSystem.getHoveredAiSystems.invalidate({ userId, domain, questionNum: currentInstance + 1 });
-      },
-    }
-  );
-
   const HOVER_TIME = 250; // ms until reveal
 
   const handleMouseEnter = (system: AISystem) => {
@@ -207,9 +190,9 @@ export default function DomainTask({
       setHoverProgress(pct);
 
       if (pct >= 100) {
-        clearInterval(hoverTimer.current!);
-        await createHoverAiSystem.mutateAsync({ userId: userId, domain, aiSystem: system.id, questionNum: currentInstance + 1 });
         setHoveredSystem(null);
+        clearInterval(hoverTimer.current!);
+        setRevealedSystems((prev) => [...prev, system.id]);
       }
     }, 16);
   };
@@ -410,7 +393,8 @@ export default function DomainTask({
                 {chosenOption === "Own Answer" ? (
                   <div className="flex flex-col items-center w-110">
                     <h2 className="text-xl max-w-3xl">Your decision is:</h2>
-                    <h2 className="text-xl max-w-3xl m-5">{selectedAnswer}</h2>
+                    <h2 className="text-xl max-w-3xl m-5">{selectedAnswer}&nbsp;
+                      {selectedAnswer === currentTask.truePrediction ? "✅" : "❌"}</h2>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center w-110">
@@ -435,7 +419,8 @@ export default function DomainTask({
                         </div>
                     </div>
                     <h2 className="text-xl max-w-3xl">
-                      AI answer: {systemAnswer}
+                      AI answer: {systemAnswer}&nbsp;
+                      {systemAnswer === currentTask.truePrediction ? "✅" : "❌"}
                     </h2>
                   </div>
                 )}
@@ -478,7 +463,7 @@ export default function DomainTask({
               <DialogTitle></DialogTitle>
             </DialogHeader>
               <h3 className="m-2 text-center">
-                How many lemons do you believe exist on the market?
+                How many low-quality AI systems do you believe exist in the pool?
               </h3>
               {/* Two groups of connected radio buttons for numbers 0-5 and 6-10 */}
               <div className="flex flex-row justify-center space-x-5">
@@ -515,6 +500,9 @@ export default function DomainTask({
                 step={10}
                 onValueChange={(value) => setSelectedTrust(value[0])}
               />
+              <h3 className="m-2 text-center">
+                Selected trust: {selectedTrust === null ? 0 : selectedTrust}%
+              </h3>
   
               <div className="flex flex-col items-center mt-5">
                 {selectedLemonNumber !== null && selectedTrust !== null && (

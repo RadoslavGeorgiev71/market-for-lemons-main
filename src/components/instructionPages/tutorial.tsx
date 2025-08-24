@@ -88,8 +88,8 @@ export default function Tutorial({ userId, disclosure, aiSystems, taskPermutatio
     }
 
     return (
-        <div ref={tutorialRef} className="p-4 border rounded-lg bg-background">
-            <p className="mb-10">Here is a tutorial for the experiment. It contains 5 rounds of each of the 3 tasks. The idea is to familiarize yourself with the interface and the types of questions.</p>
+        <div ref={tutorialRef} className="p-4 border rounded-lg bg-background pt-15">
+            {/* <p className="mb-10">Here is a tutorial for the experiment. It contains 5 rounds of each of the 3 tasks. The idea is to familiarize yourself with the interface and the types of questions.</p> */}
             {taskPermutations[currentTask] == 0 && (
                 <Finance userId={userId} disclosure={disclosure} instancePermutation={instancePermutation}
                     aiPermutations={aiPermutations[currentTask]} accuracies={accuracies[currentTask]} currentInstance={currentInstance}

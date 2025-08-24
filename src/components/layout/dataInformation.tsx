@@ -9,13 +9,13 @@ export default function DataInformation({disclosure}: {disclosure: Disclosure}) 
         <Dialog>
             <DialogTrigger asChild>
                 <Button>
-                    Data Information
+                    Systems Information
                 </Button>
             </DialogTrigger>
         <DialogContent>
             <DialogHeader>
                 <DialogTitle>
-                    Data information
+                    Systems Information
                 </DialogTitle>
             </DialogHeader>
                 {disclosure === Disclosure.none && (
