@@ -216,7 +216,7 @@ export default function Home() {
 
 
 
-  if (!getUser.data) {
+  if (!userId) {
     return (
       <div className="flex flex-col bg-background min-h-screen w-full items-center justify-center gap-6 p-24">
         <div className="overflow-y-auto center items-center p-4 bg-gray-50 rounded-md space-y-5">
