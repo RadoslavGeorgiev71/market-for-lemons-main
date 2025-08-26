@@ -54,6 +54,7 @@ export default function Reviews({ userId, disclosure, instancePermutation, aiPer
             onComplete={onComplete}
             taskInformationComponent={reviewTaskInfoComponent}
             taskTerms={reviewTerms}
+            tutorial={tutorial}
         />
     )
 }

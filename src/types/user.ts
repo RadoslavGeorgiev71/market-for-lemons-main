@@ -7,4 +7,6 @@ export interface User {
   state: State;
   disclosure: Disclosure;
   lemonDensity: LemonDensity;
+  studyId: string;
+  sessionId: string;
 }

@@ -13,20 +13,22 @@ export const userRouter = createTRPCRouter({
         state: z.enum(State),
         disclosure: z.enum(Disclosure),
         lemonDensity: z.enum(LemonDensity),
+        studyId: z.string(),
+        sessionId: z.string(),
       })
     )
     .mutation(async (opts) => {
       const { ctx, input } = opts;
 
       const [existingUser] =
-        await ctx.sql`SELECT user_id AS "userId", state, disclosure, lemon_density AS "lemonDensity"
+        await ctx.sql`SELECT user_id AS "userId", state, disclosure, lemon_density AS "lemonDensity", study_id AS "studyId", session_id AS "sessionId"
           FROM users WHERE user_id = ${input.userId}`;
 
       if (existingUser) return existingUser as User;
 
       const [newUser] =
-        await ctx.sql`INSERT INTO users (user_id, state, disclosure, lemon_density) VALUES (${input.userId}, ${input.state}, ${input.disclosure}, ${input.lemonDensity}) RETURNING 
-          user_id AS "userId", state, disclosure, lemon_density AS "lemonDensity"`;
+        await ctx.sql`INSERT INTO users (user_id, state, disclosure, lemon_density, study_id, session_id) VALUES (${input.userId}, ${input.state}, ${input.disclosure}, ${input.lemonDensity}, ${input.studyId}, ${input.sessionId}) RETURNING 
+          user_id AS "userId", state, disclosure, lemon_density AS "lemonDensity", study_id AS "studyId", session_id AS "sessionId"`;
 
       return newUser as User;
     }),

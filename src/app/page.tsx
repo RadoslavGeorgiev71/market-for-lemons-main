@@ -16,8 +16,7 @@ import data from "../data/data.json";
 import { AISystem } from "@/types/aiSystem";
 import Reviews from "@/components/reviews";
 import Medical from "@/components/medical";
-import { useEffect, useRef, useState } from "react";
-import { exitPath } from "@/data/constants";
+import { use, useEffect, useRef, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Page1 from "../components/instructionPages/page1";
 import Page2 from "../components/instructionPages/page2";
@@ -32,7 +31,8 @@ import MedicalInstructions from "@/components/taskInsturctions/medicalInstructio
 import RevokeConsent from "@/components/layout/revoke-consent";
 import DataInformation from "@/components/layout/dataInformation";
 import Instructions from "@/components/layout/instructions";
-import { parse } from "path";
+import PreTaskQuestions from "@/components/preTaskQuestions";
+import { completed_successfully, no_consent, problem_with_completion } from "@/data/constants";
 
 
 const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -50,13 +50,34 @@ export default function Home() {
     },
   });
   const searchParams = useSearchParams();
-  const userId = searchParams?.get("user_id");
+
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Read from sessionStorage after the component mounts
+    const saved = sessionStorage.getItem('userId');
+    setUserId(saved ? saved : null);
+  }, []);
+
+  useEffect(() => {
+    if (userId !== null) {
+      sessionStorage.setItem('userId', userId.toString());
+    }
+  }, [userId]);
+
+
   const getUser = api.user.getUserById.useQuery(
     { userId: userId ?? "" },
     { enabled: !!userId }
   );
   const getUserCount = api.user.getUserCount.useMutation();
   const state = getUser.data?.state;
+
+
+  const prolificId = searchParams?.get("PROLIFIC_PID");
+  const studyId = searchParams?.get("STUDY_ID");
+  const sessionId = searchParams?.get("SESSION_ID");
+
 
   const completion = api.completion.getByUserId.useQuery({ userId: userId! }, { enabled: !!userId });
 
@@ -82,8 +103,8 @@ export default function Home() {
   const calculatePath = async (userId: string, currentInstance: number) => {
     if (!userId) return "";
     const userCount: number = await getUserCount.mutateAsync() ?? 0;
-    //TODO: to be changed for different instances
-    return `/?user_id=${userId}&state=f-l-${userCount % 6}-${userCount % 400}-${currentInstance}`;
+
+    return `/?PROLIFIC_PID=${prolificId}&STUDY_ID=${studyId}&SESSION_ID=${sessionId}&state=${disclosureCode}-${lemonDensityCode}-${userCount % 6}-${userCount % 400}-${currentInstance}`;
   };
 
   const updatePath = (userId: string, newInstance: number) => {
@@ -91,7 +112,7 @@ export default function Home() {
 
     const currentStatePath = `${searchParams?.get("state")}`;
     const newStatePath = currentStatePath.replace(/-(\d+)$/, `-${newInstance}`);
-    router.replace(`/?user_id=${userId}&state=${newStatePath}`);
+    router.replace(`/?PROLIFIC_PID=${prolificId}&STUDY_ID=${studyId}&SESSION_ID=${sessionId}&state=${newStatePath}`);
   };
 
   // Fetch path parameters
@@ -136,7 +157,11 @@ export default function Home() {
 
   const [revokedConsent, setRevokedConsent] = useState<boolean>(false);
 
+  const [completionText, setCompletionText] = useState<string>("");
+
   const [currentTaskNum, setCurrentTaskNum] = useState<number>(0);
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     // Read from sessionStorage after the component mounts
@@ -171,16 +196,33 @@ export default function Home() {
     setActiveTab("comprehension"); // immediately open it
   };
 
-  if (!userId) {
+  const createCompletionResponse = api.completionResponse.create.useMutation();
+
+  const handleSurveySubmit = () => {
+    window.removeEventListener("beforeunload", handleBeforeUnload);
+
+    updateState.mutate({
+      userId: userId!,
+      state: State.fully_completed
+    });
+
+    createCompletionResponse.mutate({
+      userId: userId!,
+      response: completionText,
+    });
+
+    router.replace(completed_successfully);
+  }
+
+
+
+  if (!getUser.data) {
     return (
       <div className="flex flex-col bg-background min-h-screen w-full items-center justify-center gap-6 p-24">
         <div className="overflow-y-auto center items-center p-4 bg-gray-50 rounded-md space-y-5">
           <h2 className="text-xl max-w-3xl mb-2">About the survey</h2>
           <p>
-            We are a group of researchers of researchers from Delft University of Technology, Netherlands, University of Göttingen, Germany, and University of Cagliari, Italy.
-In this research project, we aim to investigate how users interact with AI systems across different tasks.
-You will complete a series of tasks involving a pool of AI systems that can help with cancer prediction, loan prediction, and deceptive hotel review identification.
-Completion of these tasks does not require any specific equipment beyond a computer with internet access.
+            We are a group of researchers of researchers from Delft University of Technology, Netherlands, University of Göttingen, Germany, and University of Cagliari, Italy. In this research project, we aim to investigate how users interact with AI systems across different tasks. You will complete a series of tasks involving a pool of AI systems that can help with cancer prediction, loan prediction, and deceptive hotel review identification. Completion of these tasks does not require any specific equipment beyond a computer with internet access.
           </p>
           <p className="mt-2 mb-2">
             <strong>We will collect the following information:</strong>
@@ -190,20 +232,20 @@ Completion of these tasks does not require any specific equipment beyond a compu
             <li>Your task and survey responses: The responses you provide within tasks, your answers to the multiple-choice questions, open questions and Likert-style questions throughout the study.</li>
           </ul>
           <p>
-            We do not collect any data aside from the information described, and we will keep your information confidential. All data is stored in a password-protected electronic format. The data we gather may be published in anonymized form.
-<strong>By clicking "I consent" below, you confirm that you have read, understood, and consent to the above information.</strong>
-Note: You can exit the survey at any time. This will imply revoking your consent, and subsequently, all your data will be discarded from our databases. If you want to contact the researchers beyond this survey you can email at <a href="mailto:A.H.Erlei@tudelft.nl" className="text-blue-600 hover:underline">A.H.Erlei@tudelft.nl</a> for questions. Do you consent to participate in this study under the above conditions?
+            We do not collect any data aside from the information described, and we will keep your information confidential. All data is stored in a password-protected electronic format. The data we gather may be published in anonymized form. <strong>By clicking "I consent" below, you confirm that you have read, understood, and consent to the above information.</strong> Note: You can exit the survey at any time. This will imply revoking your consent, and subsequently, all your data will be discarded from our databases. If you want to contact the researchers beyond this survey you can email at <a href="mailto:A.H.Erlei@tudelft.nl" className="text-blue-600 hover:underline">A.H.Erlei@tudelft.nl</a> for questions. Do you consent to participate in this study under the above conditions?
           </p>
           <div className="flex flex-row w-full items-center justify-center">
             <Button className="mr-5" 
               onClick={async () => {
                 const user = await createUser.mutateAsync({
-                  userId: uuidv4(),
-                  state: State.instructions,
-                  //TODO: to be changed for different instances
-                  disclosure: Disclosure.full,
-                  lemonDensity: LemonDensity.Low,
+                  userId: prolificId!,
+                  state: State.preTaskQuestions,
+                  disclosure: disclosure,
+                  lemonDensity: lemonDensity,
+                  studyId: studyId!,
+                  sessionId: sessionId!
                 });
+                setUserId(user.userId);
                 const path = await calculatePath(user.userId, 0);
                 router.replace(path);
               }}
@@ -211,7 +253,7 @@ Note: You can exit the survey at any time. This will imply revoking your consent
                 {createUser.isPending && <Loader2 className="animate-spin"/>}
               Yes
             </Button>
-            <Button onClick={() => router.push(exitPath)}>
+            <Button onClick={() => router.push(no_consent)}>
               No
             </Button>
           </div>
@@ -225,6 +267,8 @@ Note: You can exit the survey at any time. This will imply revoking your consent
     if (!state) return <div>Invalid state</div>;
 
     switch (state) {
+      case State.preTaskQuestions:
+        return <PreTaskQuestions userId={userId!} updateState={updateState} handleBeforeUnload={handleBeforeUnload}/>;
       case State.instructions:
         return (
           <>
@@ -235,10 +279,10 @@ Note: You can exit the survey at any time. This will imply revoking your consent
               <p className="mb-2">Thank you for participating in this experiment!</p>
               <p className="mb-2">
               The survey will take approximately 20 minutes. You will be paid £1.5 for completing the experiment.
-              Additionally, you can earn a bonus of up to  £3.6 that depends on your choices, as explained in more detail on the next pages.
+              Additionally, you can earn a bonus of up to  £3 that depends on your choices, as explained in more detail on the next pages.
               Throughout the experiment, we will use Coins instead of Pounds.
               The Coins you earn will be converted into Pounds at the end of the experiment.
-              The following conversion rate applies: 100 Coins =  £0.4</p>
+              The following conversion rate applies: 300 Coins =  £1</p>
               <p className="mb-2">Please read through the instruction pages below carefully in order.
                 After you have read through the instructions you will have to complete a short tutorial, and answer some comprehension questions.
                 You can only proceed with the experiment after answering the questions correctly within three trials.
@@ -277,11 +321,11 @@ Note: You can exit the survey at any time. This will imply revoking your consent
                 </TabsContent>
 
                 <TabsContent value="tutorial">
-                  <Tutorial userId={userId} disclosure={disclosure} aiSystems={aiSystems} taskPermutations={taskPermutation} aiPermutations={tutorialAiPermutations} accuracies={tutorialAccuracies} unlockComprehension={unlockComprehension}></Tutorial>
+                  <Tutorial userId={userId!} disclosure={disclosure} aiSystems={aiSystems} taskPermutations={taskPermutation} aiPermutations={tutorialAiPermutations} accuracies={tutorialAccuracies} unlockComprehension={unlockComprehension}></Tutorial>
                 </TabsContent>
 
                 <TabsContent value="comprehension">
-                  <ComprehensionQuestions disclosure={disclosure} userId={userId} updateState={updateState} handleBeforeUnload={handleBeforeUnload} />
+                  <ComprehensionQuestions disclosure={disclosure} userId={userId!} updateState={updateState} handleBeforeUnload={handleBeforeUnload} />
                 </TabsContent>
               </Tabs>
             </div>
@@ -305,12 +349,22 @@ Note: You can exit the survey at any time. This will imply revoking your consent
         return <Medical userId={userId!} disclosure={disclosure} instancePermutation={instancePermutation}
        aiPermutations={aiPermutations[currentTaskNum]} accuracies={accuracies[currentTaskNum]}
        currentInstance={currentInstance} aiSystems={aiSystems} updatePath={updatePath} onComplete={onTaskCompletion}/>;
-      case State.completion:
+      case State.completion_screen:
         return (
           <div className="flex flex-col items-center">
             <h1 className="text-2xl font-semibold">Thank you for participating!</h1>
-            <p>You have earned <strong>{completion.data?.coins} coins.</strong></p>
-            <p>You have completed all of the study. You can safely close this tab.</p>
+            <p>You have earned <strong>{completion.data?.coins || 0} coins.</strong></p>
+
+            <p className="mt-5">Do you have any thoughts you would like to share with us(optional)?</p>
+            <textarea className="mt-2 p-2 border border-gray-300 rounded-md bg-gray-50"
+              rows={6}              
+              cols={50}             
+              placeholder="Type your answer here..."
+              onChange={(e) => setCompletionText(e.target.value)}
+            />
+            <Button className="mt-5" onClick={handleSurveySubmit}>
+              Submit Survey
+            </Button>
           </div>
         );
       default:
@@ -320,11 +374,28 @@ Note: You can exit the survey at any time. This will imply revoking your consent
 
   const onTaskCompletion = async () => {
     if (currentTaskNum === 2) {
+      setIsLoading(true);
+      const financeTasks = await utils.task.getTasksForUser.fetch({ userId: userId!, domain: "Loan prediction" });
+      const reviewTasks = await utils.task.getTasksForUser.fetch({ userId: userId!, domain: "Identifying deceptive hotel reviews" });
+      const medicalTasks = await utils.task.getTasksForUser.fetch({ userId: userId!, domain: "Cancer prediction" });
+      setIsLoading(false);
+
+      if (financeTasks.length !== 10 || reviewTasks.length !== 10 || medicalTasks.length !== 10) {
+        updateState.mutate({
+          userId: userId!,
+          state: State.failed_completion,
+        });
+
+        window.removeEventListener("beforeunload", handleBeforeUnload);
+        router.replace(problem_with_completion);
+        return;
+      }
+
       const freshCount = await utils.task.countSuccessfulTasks.fetch({ userId: userId ?? "" });
 
       updateState.mutate({
         userId: userId!,
-        state: State.completion,
+        state: State.completion_screen,
       });
 
       await createCompletion.mutateAsync({ userId: userId!, coins: freshCount * 30 });
@@ -352,7 +423,7 @@ Note: You can exit the survey at any time. This will imply revoking your consent
 
 
 
-  if (getUser.isLoading || updateState.isPending) {
+  if (getUser.isLoading || updateState.isPending || isLoading) {
     return (
       <div className="flex flex-col bg-background min-h-screen w-full items-center justify-center gap-6 p-24">
         <Loading />
@@ -360,14 +431,14 @@ Note: You can exit the survey at any time. This will imply revoking your consent
     );
   }
 
-  if (revokedConsent) {
-    return (
-      <div className="flex flex-col bg-background min-h-screen w-full items-center justify-center gap-6 p-24">
-        <h1 className="text-2xl font-semibold">Consent Revoked</h1>
-        <p>You have revoked your consent to participate in this study. All of your data has been safely deleted. You can close this tab.</p>
-      </div>
-    )
-  }
+  // if (revokedConsent) {
+  //   return (
+  //     <div className="flex flex-col bg-background min-h-screen w-full items-center justify-center gap-6 p-24">
+  //       <h1 className="text-2xl font-semibold">Consent Revoked</h1>
+  //       <p>You have revoked your consent to participate in this study. All of your data has been safely deleted. You can close this tab.</p>
+  //     </div>
+  //   )
+  // }
 
   if (!getUser.data) {
     return (
@@ -394,8 +465,8 @@ Note: You can exit the survey at any time. This will imply revoking your consent
             )}
         </div>
         <div>
-            {state !== State.completion && !revokedConsent && (
-            <RevokeConsent userId={userId!} setRevokedConsent={setRevokedConsent} handleBeforeUnload={handleBeforeUnload} />
+            {state !== State.completion_screen && !revokedConsent && (
+            <RevokeConsent userId={userId!} setRevokedConsent={setRevokedConsent} updateState={updateState} handleBeforeUnload={handleBeforeUnload} />
           )}
         </div> 
       </div>

@@ -67,6 +67,7 @@ export default function Finance({ userId, disclosure, instancePermutation, aiPer
       onComplete={onComplete}
       taskInformationComponent={financeTaskInfoComponent}
       taskTerms={financeTerms}
+      tutorial={tutorial}
     />
   );
 }

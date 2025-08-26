@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { exitPath } from "@/data/constants";
+import { failed_comprehension_check } from "@/data/constants";
 import { api } from "@/trpc/react";
 import { Disclosure } from "@/types/disclosure";
 import { State } from "@/types/state";
@@ -50,8 +50,12 @@ export default function ComprehensionQuestions({disclosure, userId, updateState,
                     sessionStorage.setItem("trialsNum", JSON.stringify(trials + 1));
                     resetAnswers();
                 } else {
+                    updateState.mutate({
+                        userId: userId!,
+                        state: State.failed_comprehension_questions
+                    });
                     window.removeEventListener("beforeunload", handleBeforeUnload);
-                    router.replace(exitPath);
+                    router.replace(failed_comprehension_check);
                 }
             } else {
                 sessionStorage.setItem("trialsNum", JSON.stringify(1));
