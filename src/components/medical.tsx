@@ -26,7 +26,7 @@ export default function Medical({ userId, disclosure, instancePermutation, aiPer
      currentInstance, aiSystems, updatePath, onComplete, tutorial }: MedicalProps) {
     const medicalTerms = {
         positive: "Benign",
-        negative: "Cancer",
+        negative: "Malignant",
         question: "Considering the image on the left, does it appear to be benign or show signs of cancer?"
     }
 
@@ -61,6 +61,7 @@ export default function Medical({ userId, disclosure, instancePermutation, aiPer
             onComplete={onComplete}
             taskInformationComponent={medicalTaskInfoComponent}
             taskTerms={medicalTerms}
+            tutorial={tutorial}
         />
     )
 }

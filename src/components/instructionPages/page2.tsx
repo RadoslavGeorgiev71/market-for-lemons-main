@@ -3,13 +3,22 @@ export default function Page2() {
     <div className="p-4 border rounded-lg space-y-4">
       <p>Each round follows the same general procedure:</p>
       <ol className="list-decimal pl-6 space-y-2">
-        <li>You observe the prediction problem and the 10 AI systems.</li>
-        <li>You decide whether you want to use an AI system by clicking on one, or make the prediction yourself by selecting one of the two answers.</li>
-        <li>If you chose to rely on an AI system, you will receive feedback on whether the AI made the correct prediction.</li>
-        <li>If you choose to rely on yourself, you will make the prediction. Afterwards, you will receive feedback on whether you made the correct prediction. You will not see the prediction of any AI system.</li>
-        <li>The pool of AI systems refreshes itself and you proceed to the next round.</li>
+        <li>Observe the prediction problem and review the 10 available AI systems</li>
+        <li>Make a decision: 
+          <ul>
+            <li>- Use an AI system by clicking on one of the AI systems available in the pool.</li>
+            <li>- Make the prediction yourself by selecting one of the two possible answers.</li>
+          </ul>
+        </li>
+        <li>Receive feedback: 
+          <ul>
+            <li>- If you chose an AI system, you’ll see whether it made the correct prediction.</li>
+            <li>- If you chose to predict yourself, you’ll find out whether your answer was correct — but you won’t see any AI system’s prediction.</li>
+          </ul>
+        </li>
+        <li>The pool of AI systems refreshes, and a new set of 10 systems is presented for the next round.</li>
       </ol>
-      <p>Please now go to Page 3.</p>
+      <p>Please proceed Page 3.</p>
     </div>
   );
 }

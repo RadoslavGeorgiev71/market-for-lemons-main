@@ -3,13 +3,16 @@ import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { revoked_consent } from "@/data/constants";
+import { State } from "@/types/state";
 
 
 
-export default function RevokeConsent({userId, setRevokedConsent, handleBeforeUnload}: {userId: string; setRevokedConsent: (value: boolean) => void; handleBeforeUnload: (event: BeforeUnloadEvent) => void}) {
+export default function RevokeConsent({userId, setRevokedConsent, updateState, handleBeforeUnload}: {userId: string; setRevokedConsent: (value: boolean) => void; updateState: any; handleBeforeUnload: (event: BeforeUnloadEvent) => void}) {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    const deleteUser = api.user.delete.useMutation();
+    const router = useRouter();
+    //const deleteUser = api.user.delete.useMutation();
 
     return (
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -28,13 +31,18 @@ export default function RevokeConsent({userId, setRevokedConsent, handleBeforeUn
                 <DialogFooter>
                     <Button 
                         variant="destructive"
-                        onClick={async () => {
+                        onClick={() => {
                             if (!userId) return;
+                            updateState.mutate({
+                                userId: userId,
+                                state: State.revoked_consent
+                            });
                             //TODO: To redirect back
-                            await deleteUser.mutateAsync({ userId: userId });
+                            //await deleteUser.mutateAsync({ userId: userId });
                             setIsDialogOpen(false);
                             window.removeEventListener("beforeunload", handleBeforeUnload);
                             setRevokedConsent(true);
+                            router.replace(revoked_consent)
                         }}
                     >
                         Confirm

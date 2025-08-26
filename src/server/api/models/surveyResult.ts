@@ -1,7 +1,7 @@
 import { z } from "zod/v4";
 
 const SurveyResult = z.object({
-    userId: z.string().uuid(),
+    userId: z.string(),
     domain: z.string(),
     questionNum: z.number(),
     selectedLemonNumber: z.number(),

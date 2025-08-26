@@ -1,10 +1,10 @@
 export default function Page3() {
   return (
     <div className="p-4 border rounded-lg space-y-4">
-        <p>You will complete 10 prediction rounds for three tasks. After rounds 4 and 9, we will ask you to state your beliefs about the share of low-quality AI systems in the pool. Thus, you will indicate your beliefs about the prevalence of low-quality AI systems 6 times, 2 times per task.</p>
-        <p>Reminder: While you see 10 new AI systems each round, the share of low-quality AI systems remains the same across all 30 rounds. Therefore, you can learn from your experience with the AIs.</p>
-        <p>In addition to stating your beliefs about the share of low-quality AI systems, you will also state your trust in the market.</p>
-        <p>Please now go to Page 4.</p>
+        <p>You will complete 10 prediction rounds for each of three different tasks, totaling 30 rounds. After <strong>Rounds 4 and 9</strong> of each task, you’ll be asked to <strong>state your beliefs</strong> about the proportion of low-quality AI systems in the pool. This means you’ll provide your beliefs <strong>six times in total</strong> — <strong>twice per task</strong>.</p>
+        <p>Although the set of 10 AI systems changes every round, the <strong>overall share of low-quality AI systems remains constant</strong> across all 30 rounds. This allows you to <strong>learn from your experience</strong> and refine your beliefs over time.</p>
+        <p>In addition to estimating the share of low-quality AI systems, you’ll also be asked to express your <strong>trust in the market</strong>.</p>
+        <p>Please proceed to Page 4.</p>
     </div>
   );
 }

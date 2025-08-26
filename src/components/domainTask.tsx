@@ -33,7 +33,8 @@ interface DomainTaskProps {
     positive: string;
     negative: string;
     question: string;
-  }
+  },
+  tutorial?: boolean;
 }
 
 export default function DomainTask({
@@ -49,7 +50,8 @@ export default function DomainTask({
   updatePath,
   onComplete,
   taskInformationComponent,
-  taskTerms
+  taskTerms,
+  tutorial
 }: DomainTaskProps) {
   const [hoveredSystem, setHoveredSystem] = useState<string | null>(null);
   const [mousePos, setMousePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -242,6 +244,15 @@ export default function DomainTask({
   return (
     <div className="flex flex-col items-center gap-6 p-0 mt-[-25]">
       <h1 className="text-2xl font-bold mb-4">{domain} task {currentInstance + 1}/{tasks.length}</h1>
+      {tutorial && domain === "Loan prediction" && (
+        <p className="text-center mt-[-20]">In this task, you will evaluate loan applications and decide whether to <strong>accept</strong> or <strong>reject</strong> each one based on the information provided.</p>
+      )}
+      {tutorial && domain === "Identifying deceptive hotel reviews" && (
+        <p className="text-center mt-[-20]">In this task, you will evaluate hotel reviews and decide whether each one is <strong>genuine</strong> (written by a real customer) or <strong>deceptive</strong> (intentionally misleading or fake).</p>
+      )}
+      {tutorial && domain === "Cancer prediction" && (
+        <p className="text-center mt-[-20]">In this task, you will help determine whether skin lesion images represent <strong>benign</strong> (i.e., non-cancerous) or <strong>malignant</strong> (i.e., cancerous) conditions.</p>
+      )}
       <div className="flex flex-row max-w-300 gap-x-6 p-4 border-2 border-gray-50 rounded-md items-stretch">
         {taskInformationComponent(currentTask)}
 
@@ -295,7 +306,7 @@ export default function DomainTask({
                   onClick={() => {
                     setChosenOption("Own Answer");
                     setShowResult(true);
-                  }}>Use own answer</Button>
+                  }}>Make Decision Yourself</Button>
               )}
             </div>
           </div>
@@ -392,9 +403,14 @@ export default function DomainTask({
             </DialogHeader>
                 {chosenOption === "Own Answer" ? (
                   <div className="flex flex-col items-center w-110">
-                    <h2 className="text-xl max-w-3xl">Your decision is:</h2>
-                    <h2 className="text-xl max-w-3xl m-5">{selectedAnswer}&nbsp;
-                      {selectedAnswer === currentTask.truePrediction ? "✅" : "❌"}</h2>
+                    {tutorial ? (
+                      <h2 className="text-xl max-w-3xl">Your decision will be displayed here</h2>
+                    ) : (
+                      <>
+                        <h2 className="text-xl max-w-3xl">Your decision is: {selectedAnswer}&nbsp;
+                          {selectedAnswer === currentTask.truePrediction ? "✅" : "❌"}</h2>
+                      </>
+                    )}
                   </div>
                 ) : (
                   <div className="flex flex-col items-center w-110">
@@ -418,10 +434,14 @@ export default function DomainTask({
                           )}
                         </div>
                     </div>
-                    <h2 className="text-xl max-w-3xl">
-                      AI answer: {systemAnswer}&nbsp;
-                      {systemAnswer === currentTask.truePrediction ? "✅" : "❌"}
-                    </h2>
+                    {tutorial ? (
+                      <h2 className="text-xl max-w-3xl">AI answer will be displayed here</h2>
+                    ) : (
+                      <h2 className="text-xl max-w-3xl">
+                        AI answer: {systemAnswer}&nbsp;
+                        {systemAnswer === currentTask.truePrediction ? "✅" : "❌"}
+                      </h2>
+                    )}
                   </div>
                 )}
 
@@ -429,9 +449,15 @@ export default function DomainTask({
                 <div className="border-t-2 border-gray-900 self-stretch m-4"></div>
 
                 <div className="flex flex-col items-center">
-                  <h2 className="text-xl max-w-3xl mb-8 text-center">
-                    The correct decision is: <strong>{currentTask.truePrediction}</strong>
-                  </h2>
+                  {tutorial ? (
+                    <h2 className="text-xl max-w-3xl mb-8 text-center">
+                      The correct decision will be displayed here
+                    </h2>
+                  ) : (
+                    <h2 className="text-xl max-w-3xl mb-8 text-center">
+                      The correct decision is: <strong>{currentTask.truePrediction}</strong>
+                    </h2>
+                  )}
                   <Button className="w-50 mb-5" onClick={() => {
                     submitAnswer();
                     setShowResult(false);

@@ -1,6 +1,6 @@
 export default function Page4({ taskPermutation }: { taskPermutation: number[] }) {
-    const tasks = ["Loan prediction", "Identifying deceptive hotel reviews", "Cancer prediction"];
-    
+    const tasks = ["Loan Prediction", "Identifying Deceptive Hotel Reviews", "Cancer Prediction"];
+
     return (
         <div className="p-4 border rounded-lg space-y-4">
             <p>These are the three tasks you will complete throughout this survey:</p>
@@ -10,8 +10,13 @@ export default function Page4({ taskPermutation }: { taskPermutation: number[] }
                 ))}
             </ol>
             <p>You will complete 10 prediction rounds for each. You will receive detailed instructions before each respective task.</p>
-            <p>During each task, you have access to these 5 instruction pages (button "Instructions") and to a summary of the AI system's parameters(button "Systems Information"). You can additionally revoke your consent at any time via the button "Revoke Consent" and your data will be deleted.</p>
-            <p>Please now go to Page 5.</p>
+            <p>During each task, you will have access to:</p>
+            <ul className="pl-6">
+                <li>- <strong>Instructions</strong>: A set of 5 pages explaining the task and process (via the "Instructions" button).</li>
+                <li>- <strong>Systems Information</strong>: A summary of the AI systems’ parameters (via the "Systems Information" button).</li>
+                <li>- <strong>Revoke Consent</strong>: You may withdraw your participation at any time using the "Revoke Consent" button, and your data will be deleted.</li>
+            </ul>
+            <p>Please proceed to Page 5.</p>
         </div>
     )
 }

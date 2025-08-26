@@ -4,6 +4,8 @@ import { taskRouter } from "./routes/tasks";
 import { hoveredAiSystemRouter } from "./routes/hoveredAiSystems";
 import { surveyResultRouter } from "./routes/surveyResults";
 import { completionRouter } from "./routes/completions";
+import { preTaskAnswersRouter } from "./routes/preTaskAnswers";
+import { completionResponseRouter } from "./routes/completionResponses";
 
 // Define the main router that takes the child routes.
 export const appRouter = createTRPCRouter({
@@ -11,7 +13,9 @@ export const appRouter = createTRPCRouter({
     task: taskRouter,
     hoveredAiSystem: hoveredAiSystemRouter,
     surveyResult: surveyResultRouter,
-    completion: completionRouter
+    completion: completionRouter,
+    preTaskAnswers: preTaskAnswersRouter,
+    completionResponse: completionResponseRouter,
 })
 
 // Export the type definition of the API
