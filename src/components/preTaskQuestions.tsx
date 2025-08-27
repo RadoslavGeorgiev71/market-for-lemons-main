@@ -163,7 +163,7 @@ export default function PreTaskQuestions({userId, updateState, handleBeforeUnloa
                     </div>
 
                     <div className="flex flex-col items-center space-y-5 shadow p-6 bg-white rounded w-full">
-                        <p>It is enough for me that a technical system works; I don’t care how or why (reverse-coded). </p>
+                        <p>It is enough for me that a technical system works; I don’t care how or why. </p>
                         <div className="flex flex-row justify-center space-x-5">
                             {Array.from({ length: 6 }, (_, i) => i).map((n) => (
                             <label key={n}>
@@ -187,7 +187,7 @@ export default function PreTaskQuestions({userId, updateState, handleBeforeUnloa
                     </div>
 
                     <div className="flex flex-col items-center space-y-5 shadow p-6 bg-white rounded w-full">
-                        <p>It is enough for me to know the basic functions of a technical system. (reverse-coded). </p>
+                        <p>It is enough for me to know the basic functions of a technical system. </p>
                         <div className="flex flex-row justify-center space-x-5">
                             {Array.from({ length: 6 }, (_, i) => i).map((n) => (
                             <label key={n}>
