@@ -225,7 +225,7 @@ export default function Home() {
             We are a group of researchers from Delft University of Technology, Netherlands, University of Göttingen, Germany, and University of Cagliari, Italy. In this research project, we aim to investigate how users interact with AI systems across different tasks. You will complete a series of tasks involving a pool of AI systems that can help with cancer prediction, loan prediction, and deceptive hotel review identification. Completion of these tasks does not require any specific equipment beyond a computer with internet access.
           </p>
           <p className="">
-              The survey will take approximately 20 minutes. You will be paid £2.5 for completing the experiment.
+              The survey will take approximately 25 minutes. You will be paid £2.5 for completing the experiment.
               Additionally, you can earn a bonus of up to  £3 that depends on your choices, as explained in more detail on the next pages.
               Throughout the experiment, we will use Coins instead of Pounds.
               The Coins you earn will be converted into Pounds at the end of the experiment.
@@ -362,7 +362,15 @@ export default function Home() {
           </div>
         );
       default:
-        return <div>Invalid state</div>;
+        return (
+          <div className="flex flex-col bg-background min-h-screen w-full items-center justify-center gap-6 p-24">
+            <h1 className="text-2xl font-semibold">Contact researchers!</h1>
+            <p>
+              Unfortunately, we were unable to find your current submission.
+              Please contact the researchers for support at <a href="mailto:A.H.Erlei@tudelft.nl" className="text-blue-600 hover:underline">A.H.Erlei@tudelft.nl</a>
+            </p>
+          </div>
+        );
     }
   };
 
