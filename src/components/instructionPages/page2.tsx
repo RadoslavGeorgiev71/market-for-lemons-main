@@ -1,6 +1,6 @@
 export default function Page2() {
   return (
-    <div className="p-4 border rounded-lg space-y-4">
+    <div className="p-4 border rounded-lg space-y-4 bg-gray-50">
       <p>Each round follows the same general procedure:</p>
       <ol className="list-decimal pl-6 space-y-2">
         <li>Observe the prediction problem and review the 10 available AI systems</li>

@@ -74,7 +74,7 @@ export default function ComprehensionQuestions({disclosure, userId, updateState,
     };
 
     return (
-        <div className="p-4 border rounded-lg space-y-4">
+        <div className="p-4 border rounded-lg space-y-4 bg-gray-50">
             {disclosure == Disclosure.none && (
                 <div>
                     <p>Choose the correct option: {visibleResult && (isCorrect1 ? "✅": "❌")}</p>

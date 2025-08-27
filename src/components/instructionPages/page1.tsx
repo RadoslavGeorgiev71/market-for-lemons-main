@@ -4,7 +4,13 @@ import Image from "next/image";
 export default function Page1({disclosure}: {disclosure: Disclosure}) {
 
   return (
-    <div className="p-4 border rounded-lg">
+    <div className="p-4 border rounded-lg bg-gray-50">
+        <p className="mb-2">Thank you for participating in this experiment!</p>
+        <p className="mb-5">Please read through this and the following instruction pages carefully in order.
+        After you have read through the instructions you will have to complete a short tutorial, and answer some comprehension questions.
+        You can only proceed with the experiment after answering the questions correctly within three trials.
+        If you did not successfully answer all three comprehension questions after three trials,
+        you will not be allowed to participate in the experiment.</p>
         <p>You will complete 10 rounds of three prediction tasks.
             In total, you will complete 30 rounds. Each round, you will choose between either
             (1) making the prediction yourself or (2) choosing an AI system to make the prediction for you.

@@ -222,8 +222,14 @@ export default function Home() {
         <div className="overflow-y-auto center items-center p-4 bg-gray-50 rounded-md space-y-5">
           <h2 className="text-xl max-w-3xl mb-2">About the survey</h2>
           <p>
-            We are a group of researchers of researchers from Delft University of Technology, Netherlands, University of Göttingen, Germany, and University of Cagliari, Italy. In this research project, we aim to investigate how users interact with AI systems across different tasks. You will complete a series of tasks involving a pool of AI systems that can help with cancer prediction, loan prediction, and deceptive hotel review identification. Completion of these tasks does not require any specific equipment beyond a computer with internet access.
+            We are a group of researchers from Delft University of Technology, Netherlands, University of Göttingen, Germany, and University of Cagliari, Italy. In this research project, we aim to investigate how users interact with AI systems across different tasks. You will complete a series of tasks involving a pool of AI systems that can help with cancer prediction, loan prediction, and deceptive hotel review identification. Completion of these tasks does not require any specific equipment beyond a computer with internet access.
           </p>
+          <p className="">
+              The survey will take approximately 20 minutes. You will be paid £2.5 for completing the experiment.
+              Additionally, you can earn a bonus of up to  £3 that depends on your choices, as explained in more detail on the next pages.
+              Throughout the experiment, we will use Coins instead of Pounds.
+              The Coins you earn will be converted into Pounds at the end of the experiment.
+              The following conversion rate applies: 300 Coins =  £1</p>
           <p className="mt-2 mb-2">
             <strong>We will collect the following information:</strong>
           </p>
@@ -275,20 +281,7 @@ export default function Home() {
             <div className="flex w-full h-fit mt-[-50] items-center justify-center gap-x-2">
               <h1 className="text-2xl font-semibold">Instructions</h1>
             </div>
-            <div className="center items-center p-4 bg-gray-50 rounded-md">
-              <p className="mb-2">Thank you for participating in this experiment!</p>
-              <p className="mb-2">
-              The survey will take approximately 20 minutes. You will be paid £1.5 for completing the experiment.
-              Additionally, you can earn a bonus of up to  £3 that depends on your choices, as explained in more detail on the next pages.
-              Throughout the experiment, we will use Coins instead of Pounds.
-              The Coins you earn will be converted into Pounds at the end of the experiment.
-              The following conversion rate applies: 300 Coins =  £1</p>
-              <p className="mb-2">Please read through the instruction pages below carefully in order.
-                After you have read through the instructions you will have to complete a short tutorial, and answer some comprehension questions.
-                You can only proceed with the experiment after answering the questions correctly within three trials.
-                If you did not successfully answer all three comprehension questions after three trials,
-                you will not be allowed to participate in the experiment.</p>
-
+            <div className="w-full">
               <Tabs value={activeTab} onValueChange={handleTabChange}>
                 <TabsList className="flex mt-5 space-x-2">
                   <TabsTrigger className="w-20" value="page1" disabled={isTabDisabled("page1")}>Page 1</TabsTrigger>
@@ -358,8 +351,9 @@ export default function Home() {
             <p className="mt-5">Do you have any thoughts you would like to share with us(optional)?</p>
             <textarea className="mt-2 p-2 border border-gray-300 rounded-md bg-gray-50"
               rows={6}              
-              cols={50}             
-              placeholder="Type your answer here..."
+              cols={50}
+              maxLength={250}
+              placeholder="Max 250 characters"
               onChange={(e) => setCompletionText(e.target.value)}
             />
             <Button className="mt-5" onClick={handleSurveySubmit}>
@@ -453,7 +447,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col bg-background min-h-screen w-full items-center justify-center gap-6 p-24">
+    <div className="flex flex-col bg-background min-h-screen w-full items-center gap-6 p-24 mt-10">
       {/* Absolute top left and top right task instructions and revoke consent button */}
       <div className="absolute top-0 left-0 right-0 flex justify-between p-4">
         <div>

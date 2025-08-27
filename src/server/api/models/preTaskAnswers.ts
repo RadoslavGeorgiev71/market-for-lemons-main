@@ -8,8 +8,6 @@ const PreTaskAnswers = z.object({
     skinCancerDetection: z.number(),
 
     risk: z.number(),
-    trust1: z.number(),
-    trust2: z.number(),
 
     technology1: z.number(),
     technology2: z.number(),

@@ -2,7 +2,7 @@ export default function Page4({ taskPermutation }: { taskPermutation: number[] }
     const tasks = ["Loan Prediction", "Identifying Deceptive Hotel Reviews", "Cancer Prediction"];
 
     return (
-        <div className="p-4 border rounded-lg space-y-4">
+        <div className="p-4 border rounded-lg space-y-4 bg-gray-50">
             <p>These are the three tasks you will complete throughout this survey:</p>
             <ol className="list-decimal pl-6 space-y-2">
                 {taskPermutation.map((task, index) => (

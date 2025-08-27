@@ -81,14 +81,14 @@ export default function Tutorial({ userId, disclosure, aiSystems, taskPermutatio
 
     if (isCompleted) {
         return (
-            <div className="p-4 border rounded-lg">
+            <div className="p-4 border rounded-lg bg-gray-50">
                 <p>Tutorial completed! Please now go to the comprehension questions.</p>
             </div>
         )
     }
 
     return (
-        <div ref={tutorialRef} className="p-4 border rounded-lg bg-background pt-15">
+        <div ref={tutorialRef} className="p-4 border rounded-lg bg-background pt-15 ">
             {/* <p className="mb-10">Here is a tutorial for the experiment. It contains 5 rounds of each of the 3 tasks. The idea is to familiarize yourself with the interface and the types of questions.</p> */}
             {taskPermutations[currentTask] == 0 && (
                 <Finance userId={userId} disclosure={disclosure} instancePermutation={instancePermutation}
