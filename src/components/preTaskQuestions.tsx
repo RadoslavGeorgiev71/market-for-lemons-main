@@ -64,9 +64,6 @@ export default function PreTaskQuestions({userId, updateState, handleBeforeUnloa
                 state: State.failed_attention_check
             });
             // setFailed(true);
-
-            window.removeEventListener("beforeunload", handleBeforeUnload);
-            router.replace(failed_attention_check);
         } else {
             updateState.mutate({
                 userId: userId!,

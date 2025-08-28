@@ -32,7 +32,7 @@ import RevokeConsent from "@/components/layout/revoke-consent";
 import DataInformation from "@/components/layout/dataInformation";
 import Instructions from "@/components/layout/instructions";
 import PreTaskQuestions from "@/components/preTaskQuestions";
-import { completed_successfully, no_consent, problem_with_completion } from "@/data/constants";
+import { completed_successfully, failed_attention_check, no_consent, problem_with_completion } from "@/data/constants";
 
 
 const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -290,6 +290,23 @@ export default function Home() {
     switch (state) {
       case State.preTaskQuestions:
         return <PreTaskQuestions userId={userId!} updateState={updateState} handleBeforeUnload={handleBeforeUnload}/>;
+      case State.failed_attention_check:
+        return (
+          <div className="flex flex-col bg-background w-full items-center justify-center gap-6 p-24">
+            <h1 className="m-2 text-center">
+              Due to failed attention checks, you cannot proceed with the experiment. Thank you for your interest!
+              Please click the button below to register your participation.
+            </h1>
+            <div className="flex justify-center">
+                <Button onClick={async () => {
+                    window.removeEventListener("beforeunload", handleBeforeUnload);
+                    router.replace(failed_attention_check)
+                }}>
+                    Close Survey
+                </Button>
+            </div>
+          </div>
+        )
       case State.instructions:
         return (
           <>
