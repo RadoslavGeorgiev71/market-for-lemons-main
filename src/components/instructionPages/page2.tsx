@@ -6,8 +6,8 @@ export default function Page2() {
         <li>Observe the prediction problem and review the 10 available AI systems</li>
         <li>Make a decision: 
           <ul>
-            <li>- Use an AI system by clicking on one of the AI systems available in the pool.</li>
-            <li>- Make the prediction yourself by selecting one of the two possible answers.</li>
+            <li>- You can use an AI system by clicking on the respective icon in the AI pool.</li>
+            <li>- You can make the prediction yourself by selecting one of the two possible answers.</li>
           </ul>
         </li>
         <li>Receive feedback: 
@@ -18,7 +18,7 @@ export default function Page2() {
         </li>
         <li>The pool of AI systems refreshes, and a new set of 10 systems is presented for the next round.</li>
       </ol>
-      <p>Please proceed Page 3.</p>
+      <p>Continue to Page 3.</p>
     </div>
   );
 }
