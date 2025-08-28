@@ -152,9 +152,6 @@ export default function Home() {
     data.ais.lowDensity : 
     lemonDensity === LemonDensity.Medium ? data.ais.mediumDensity : data.ais.highDensity;
 
-  const [activeTab, setActiveTab] = useState<string>("page1");
-  const [unlockedTabs, setUnlockedTabs] = useState<string[]>(["page1", "page2"]);
-
   const [revokedConsent, setRevokedConsent] = useState<boolean>(false);
 
   const [completionText, setCompletionText] = useState<string>("");
@@ -175,6 +172,22 @@ export default function Home() {
   }, [currentTaskNum]);
 
 
+
+  const [activeTab, setActiveTab] = useState<string>("page1");
+  const [unlockedTabs, setUnlockedTabs] = useState<string[]>(["page1", "page2"]
+);
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem("unlockedTabs");
+    if (stored) {
+      setUnlockedTabs(JSON.parse(stored));
+    }
+  }, []);
+
+  useEffect(() => {
+    sessionStorage.setItem("unlockedTabs", JSON.stringify(unlockedTabs));
+  }, [unlockedTabs]);
+
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     // unlock the next tab only when current tab is visited
@@ -193,8 +206,10 @@ export default function Home() {
     if (!unlockedTabs.includes("comprehension")) {
       setUnlockedTabs([...unlockedTabs, "comprehension"]);
     }
-    setActiveTab("comprehension"); // immediately open it
   };
+
+
+
 
   const createCompletionResponse = api.completionResponse.create.useMutation();
 
@@ -363,7 +378,7 @@ export default function Home() {
         );
       default:
         return (
-          <div className="flex flex-col bg-background min-h-screen w-full items-center justify-center gap-6 p-24">
+          <div className="flex flex-col bg-background w-full items-center justify-center gap-6 p-24">
             <h1 className="text-2xl font-semibold">Contact researchers!</h1>
             <p>
               Unfortunately, we were unable to find your current submission.
@@ -444,7 +459,7 @@ export default function Home() {
 
   if (!getUser.data) {
     return (
-      <div className="flex flex-col bg-background min-h-screen w-full items-center justify-center gap-6 p-24">
+      <div className="flex flex-col bg-background w-full items-center justify-center gap-6 p-24">
         <h1 className="text-2xl font-semibold">Contact researchers!</h1>
         <p>
           Unfortunately, we were unable to find your current submission.

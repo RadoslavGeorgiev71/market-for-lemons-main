@@ -35,7 +35,7 @@ export default function PreTaskQuestions({userId, updateState, handleBeforeUnloa
 
     const [page, setPage] = useState(1);
 
-    const [failed, setFailed] = useState<boolean>(false);
+    // const [failed, setFailed] = useState<boolean>(false);
 
     const createPreTaskAnswers = api.preTaskAnswers.create.useMutation();
 
@@ -63,7 +63,10 @@ export default function PreTaskQuestions({userId, updateState, handleBeforeUnloa
                 userId: userId!,
                 state: State.failed_attention_check
             });
-            setFailed(true);
+            // setFailed(true);
+
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+            router.replace(failed_attention_check);
         } else {
             updateState.mutate({
                 userId: userId!,
@@ -271,7 +274,7 @@ export default function PreTaskQuestions({userId, updateState, handleBeforeUnloa
                 </div>
             )}
 
-            {failed && (
+            {/* {failed && (
                 <Dialog
                     open={failed}
                     onOpenChange={(open) => {
@@ -298,7 +301,7 @@ export default function PreTaskQuestions({userId, updateState, handleBeforeUnloa
                         </div>
                     </DialogContent>
                 </Dialog>
-            )}
+            )} */}
         </div>
     )
 }
