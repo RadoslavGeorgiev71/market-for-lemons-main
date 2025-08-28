@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { api } from "@/trpc/react";
-import { v4 as uuidv4 } from "uuid";
 import { State } from "@/types/state";
 import { useSearchParams } from "next/navigation";
 import Loading from "./loading";
@@ -32,7 +31,7 @@ import RevokeConsent from "@/components/layout/revoke-consent";
 import DataInformation from "@/components/layout/dataInformation";
 import Instructions from "@/components/layout/instructions";
 import PreTaskQuestions from "@/components/preTaskQuestions";
-import { completed_successfully, failed_attention_check, no_consent, problem_with_completion } from "@/data/constants";
+import { completed_successfully, failed_attention_check, failed_comprehension_check, no_consent, problem_with_completion } from "@/data/constants";
 
 
 const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -295,12 +294,46 @@ export default function Home() {
           <div className="flex flex-col bg-background w-full items-center justify-center gap-6 p-24">
             <h1 className="m-2 text-center">
               Due to failed attention checks, you cannot proceed with the experiment. Thank you for your interest!
-              Please click the button below to register your participation.
+              Please click the button below to go back to Prolific.
             </h1>
             <div className="flex justify-center">
                 <Button onClick={async () => {
                     window.removeEventListener("beforeunload", handleBeforeUnload);
                     router.replace(failed_attention_check)
+                }}>
+                    Close Survey
+                </Button>
+            </div>
+          </div>
+        )
+      case State.failed_comprehension_questions:
+        return (
+          <div className="flex flex-col bg-background w-full items-center justify-center gap-6 p-24">
+            <h1 className="m-2 text-center">
+              You have failed the comprehension questions and as a result you cannot proceed with the experiment.
+              Please click the button below to go back to Prolific.
+            </h1>
+            <div className="flex justify-center">
+                <Button onClick={async () => {
+                    window.removeEventListener("beforeunload", handleBeforeUnload);
+                    router.replace(failed_comprehension_check);
+                }}>
+                    Close Survey
+                </Button>
+            </div>
+          </div>
+        )
+      case State.failed_completion:
+        return (
+          <div className="flex flex-col bg-background w-full items-center justify-center gap-6 p-24">
+            <h1 className="m-2 text-center">
+              Unfortunately, something went wrong with your completion. We have all your answers saved, and will resolve the issue based on your data.
+              Please click the button below to go back to Prolific.
+            </h1>
+            <div className="flex justify-center">
+                <Button onClick={async () => {
+                    window.removeEventListener("beforeunload", handleBeforeUnload);
+                    router.replace(problem_with_completion);
                 }}>
                     Close Survey
                 </Button>
@@ -420,8 +453,6 @@ export default function Home() {
           state: State.failed_completion,
         });
 
-        window.removeEventListener("beforeunload", handleBeforeUnload);
-        router.replace(problem_with_completion);
         return;
       }
 
@@ -499,7 +530,8 @@ export default function Home() {
             )}
         </div>
         <div>
-            {state !== State.completion_screen && !revokedConsent && (
+            {state !== State.completion_screen && state !== State.failed_comprehension_questions
+            && state !== State.failed_completion && state !== State.failed_attention_check && !revokedConsent && (
             <RevokeConsent userId={userId!} setRevokedConsent={setRevokedConsent} updateState={updateState} handleBeforeUnload={handleBeforeUnload} />
           )}
         </div> 

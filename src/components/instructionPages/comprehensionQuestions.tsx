@@ -54,8 +54,6 @@ export default function ComprehensionQuestions({disclosure, userId, updateState,
                         userId: userId!,
                         state: State.failed_comprehension_questions
                     });
-                    window.removeEventListener("beforeunload", handleBeforeUnload);
-                    router.replace(failed_comprehension_check);
                 }
             } else {
                 sessionStorage.setItem("trialsNum", JSON.stringify(1));
