@@ -1,9 +1,9 @@
 import { failed_attention_check } from "@/data/constants";
 
 export enum State {
-  instructions = "instructions",
-
   preTaskQuestions = "preTaskQuestions",
+
+  instructions = "instructions",
 
   preTask1 = "preTask1",
   finance = "finance",

@@ -115,13 +115,16 @@ export default function DomainTask({
     const elapsedMs = Date.now() - startTime!;
     const elapsedSeconds = Math.floor(elapsedMs / 1000);
 
-    for (const system of revealedSystems) {
-      await createHoverAiSystem.mutateAsync({ userId: userId, domain: domain, aiSystem: system, questionNum: currentInstance + 1 });
+    if (!tutorial) {
+       for (const system of revealedSystems) {
+        await createHoverAiSystem.mutateAsync({ userId: userId, domain: domain, aiSystem: system, questionNum: currentInstance + 1 });
+      }
     }
 
     setRevealedSystems([]);
 
-    if (chosenOption === "Own Answer") {
+    if (!tutorial) {
+      if (chosenOption === "Own Answer") {
       await createTask.mutateAsync({
         userId: userId,
         domain: domain,
@@ -144,6 +147,7 @@ export default function DomainTask({
         timeSpent: elapsedSeconds,
       });
     }
+  }
 
     setSelectedAnswer(null);
     setSelectedSystem(null);
