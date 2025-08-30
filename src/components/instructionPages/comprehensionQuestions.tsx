@@ -1,7 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { failed_comprehension_check } from "@/data/constants";
-import { api } from "@/trpc/react";
 import { Disclosure } from "@/types/disclosure";
 import { State } from "@/types/state";
 import { useRouter } from "next/navigation";

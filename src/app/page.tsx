@@ -273,7 +273,7 @@ export default function Home() {
                 {createUser.isPending && <Loader2 className="animate-spin"/>}
               Yes
             </Button>
-            <Button onClick={() => router.push(no_consent)}>
+            <Button onClick={() => router.replace(no_consent)}>
               No
             </Button>
           </div>
