@@ -114,10 +114,11 @@ export default function DomainTask({
   const nextTask = async () => {
     const elapsedMs = Date.now() - startTime!;
     const elapsedSeconds = Math.floor(elapsedMs / 1000);
+    const instance = currentInstance;
 
     if (!tutorial) {
        for (const system of revealedSystems) {
-        await createHoverAiSystem.mutateAsync({ userId: userId, domain: domain, aiSystem: system, questionNum: currentInstance + 1 });
+        await createHoverAiSystem.mutateAsync({ userId: userId, domain: domain, aiSystem: system, questionNum: instance + 1 });
       }
     }
 
@@ -128,7 +129,7 @@ export default function DomainTask({
       await createTask.mutateAsync({
         userId: userId,
         domain: domain,
-        questionNum: currentInstance + 1,
+        questionNum: instance + 1,
         taskId: currentTask.id,
         usedAI: false,
         systemId: "",
@@ -139,7 +140,7 @@ export default function DomainTask({
       await createTask.mutateAsync({
         userId: userId,
         domain: domain,
-        questionNum: currentInstance + 1,
+        questionNum: instance + 1,
         taskId: currentTask.id,
         usedAI: true,
         systemId: selectedSystem!.id,
@@ -154,10 +155,10 @@ export default function DomainTask({
 
     setStartTime(Date.now());
 
-    if (currentInstance == tasks.length - 1) {
+    if (instance == tasks.length - 1) {
       onComplete?.();
     } else {
-      updatePath(userId, currentInstance + 1);
+      updatePath(userId, instance + 1);
     }
   };
 
@@ -166,6 +167,10 @@ export default function DomainTask({
   const createSurveyResult = api.surveyResult.create.useMutation();
 
   const submitSurvey = async () => {
+    setShowSurvey(false);
+    setSelectedLemonNumber(null);
+    setSelectedTrust(null);
+
     await createSurveyResult.mutateAsync({
       userId: userId,
       domain: domain,
@@ -173,11 +178,8 @@ export default function DomainTask({
       selectedLemonNumber: selectedLemonNumber!,
       selectedTrust: selectedTrust!,
     });
-
-    setSelectedLemonNumber(null);
-    setSelectedTrust(null);
-    setShowSurvey(false);
-    nextTask();
+    
+    await nextTask();
   };
 
   const HOVER_TIME = 250; // ms until reveal
@@ -241,7 +243,7 @@ export default function DomainTask({
 
   
 
-  if (createTask.isPending) {
+  if (createTask.isPending || createHoverAiSystem.isPending) {
     return <Loading />;
   }
 

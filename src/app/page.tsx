@@ -15,7 +15,7 @@ import data from "../data/data.json";
 import { AISystem } from "@/types/aiSystem";
 import Reviews from "@/components/reviews";
 import Medical from "@/components/medical";
-import { use, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Page1 from "../components/instructionPages/page1";
 import Page2 from "../components/instructionPages/page2";
@@ -212,15 +212,15 @@ export default function Home() {
 
   const createCompletionResponse = api.completionResponse.create.useMutation();
 
-  const handleSurveySubmit = () => {
+  const handleSurveySubmit = async () => {
     window.removeEventListener("beforeunload", handleBeforeUnload);
 
-    updateState.mutate({
+    await updateState.mutateAsync({
       userId: userId!,
       state: State.fully_completed
     });
 
-    createCompletionResponse.mutate({
+    await createCompletionResponse.mutateAsync({
       userId: userId!,
       response: completionText,
     });
